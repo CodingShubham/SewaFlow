@@ -6,7 +6,7 @@ const app=express();
 const cookieParser = require('cookie-parser');
 const authRoutes = require('./routes/authRoutes');
 const connectDB=require("./config/db")
-const auth=require("./Middlewares/authMiddleware")
+const workFlowRoutes=require("./routes/workFlowRoute")
 
 app.use(cors());
 app.use(express.json());
@@ -23,6 +23,7 @@ app.get("/",(req,res)=>{
 
 
 app.use('/api/auth', authRoutes);
+app.use("/api/workflows",workFlowRoutes)
 
 
 app.listen(PORT,()=>{

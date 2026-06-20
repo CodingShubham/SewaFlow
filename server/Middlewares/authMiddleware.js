@@ -14,10 +14,10 @@ try{
     }
 
     const decodeObj=await JWT.verify(token,process.env.JWT_SECRET);
-    const{id}=decodeObj;
+    const{userId }=decodeObj;
 
-    const user=await User.findById(id);
-    
+    const user=await User.findById(userId);
+
     if(!user){
         throw new Error("User Not Found ")
     }
