@@ -8,6 +8,7 @@ const authRoutes = require('./routes/authRoutes');
 const connectDB=require("./config/db")
 const workFlowRoutes=require("./routes/workFlowRoute")
 const testRoutes=require("./routes/testRoutes")
+const executionRoutes = require('./routes/executionRoutes');
 
 app.use(cors());
 app.use(express.json());
@@ -26,6 +27,7 @@ app.get("/",(req,res)=>{
 app.use('/api/auth', authRoutes);
 app.use("/api/workflows",workFlowRoutes)
 app.use("/api/test",testRoutes)
+app.use('/api/executions', executionRoutes);
 
 app.listen(PORT,()=>{
     console.log(`server listening on ${PORT}`);
