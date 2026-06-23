@@ -1,10 +1,38 @@
+// 
+
+const Groq = require("groq-sdk");
+const { parseOrderPrompt } = require("./Prompts");
+
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+
 const parseOrder = async (input) => {
-    console.log("Running parseOrder with input:", input);
-    return {
-        customerPhone: input.rawMessage?.from || "unknown",
-        items: [{ name: "sugar", qty: 5, unit: "kg" }],
-        confidence: 0.95
-    };
+    const text = input.rawMessage?.text || "";
+    const from = input.rawMessage?.from || "unknown";
+
+    try {
+        const completion = await groq.chat.completions.create({
+            messages: [
+                {
+                    role: "user",
+                    content: parseOrderPrompt(text, from)
+                }
+            ],
+            model: "llama-3.3-70b-versatile",
+        });
+
+        const response = completion.choices[0]?.message?.content?.trim();
+        const parsed = JSON.parse(response);
+        console.log("Parsed order:", parsed);
+        return parsed;
+
+    } catch (error) {
+        console.error("parseOrder AI error:", error.message);
+        return {
+            customerPhone: from,
+            items: [],
+            confidence: 0.1
+        };
+    }
 };
 
 const createCustomer = async (input) => {
