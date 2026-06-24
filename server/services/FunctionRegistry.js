@@ -1,7 +1,9 @@
-// 
-
 const Groq = require("groq-sdk");
 const { parseOrderPrompt } = require("./Prompts");
+const Customer = require("../Model/Customer");
+const Inventory = require("../Model/Inventory");
+const Invoice = require("../Model/Invoice");
+const axios = require("axios");
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
@@ -11,12 +13,7 @@ const parseOrder = async (input) => {
 
     try {
         const completion = await groq.chat.completions.create({
-            messages: [
-                {
-                    role: "user",
-                    content: parseOrderPrompt(text, from)
-                }
-            ],
+            messages: [{ role: "user", content: parseOrderPrompt(text, from) }],
             model: "llama-3.3-70b-versatile",
         });
 
@@ -27,52 +24,126 @@ const parseOrder = async (input) => {
 
     } catch (error) {
         console.error("parseOrder AI error:", error.message);
-        return {
-            customerPhone: from,
-            items: [],
-            confidence: 0.1
-        };
+        return { customerPhone: from, items: [], confidence: 0.1 };
     }
 };
 
 const createCustomer = async (input) => {
-    console.log("Running createCustomer with input:", input);
-    return {
-        customerId: "fake_customer_id_123",
-        customerPhone: input.customerPhone
-    };
-};
+    const { customerPhone, userId } = input;
 
-const generateInvoice = async (input) => {
-    console.log("Running generateInvoice with input:", input);
+    let customer = await Customer.findOne({ phone: customerPhone, userId });
+
+    if (!customer) {
+        customer = await Customer.create({ userId, phone: customerPhone });
+        console.log("New customer created:", customer._id);
+    } else {
+        customer.totalOrders += 1;
+        await customer.save();
+        console.log("Existing customer found:", customer._id);
+    }
+
     return {
-        invoiceId: "fake_invoice_id_456",
-        amount: 250,
-        items: input.items
+        customerId: customer._id,
+        customerPhone: customer.phone
     };
 };
 
 const updateInventory = async (input) => {
-    console.log("Running updateInventory with input:", input);
+    const { items, userId } = input;
+    const updatedItems = [];
+
+    for (const item of items) {
+        const inventoryItem = await Inventory.findOne({
+            userId,
+            itemName: { $regex: new RegExp(item.name, 'i') }
+        });
+
+        if (inventoryItem) {
+            inventoryItem.quantity -= item.qty;
+            await inventoryItem.save();
+            updatedItems.push({
+                name: item.name,
+                qty: item.qty,
+                unit: item.unit,
+                pricePerUnit: inventoryItem.pricePerUnit,
+                total: item.qty * inventoryItem.pricePerUnit
+            });
+            console.log(`Updated inventory for ${item.name}: ${inventoryItem.quantity} remaining`);
+        } else {
+            updatedItems.push({
+                name: item.name,
+                qty: item.qty,
+                unit: item.unit,
+                pricePerUnit: 0,
+                total: 0
+            });
+            console.log(`Item not found in inventory: ${item.name}`);
+        }
+    }
+
+    return { updated: true, items: updatedItems };
+};
+
+const generateInvoice = async (input) => {
+    const { customerId, userId, items } = input;
+
+    const totalAmount = items.reduce((sum, item) => sum + (item.total || 0), 0);
+
+    const invoice = await Invoice.create({
+        userId,
+        customerId,
+        items,
+        totalAmount
+    });
+
+    console.log("Invoice created:", invoice._id, "Total:", totalAmount);
+
     return {
-        updated: true,
-        items: input.items
+        invoiceId: invoice._id,
+        amount: totalAmount,
+        items
     };
 };
 
 const notifyCustomer = async (input) => {
-    console.log("Running notifyCustomer with input:", input);
-    return {
-        sent: true,
-        message: `Order confirmed. Invoice ${input.invoiceId} generated.`
-    };
+    const { customerPhone, invoiceId, amount, items } = input;
+
+    const itemList = items
+        .map(item => `${item.name} x${item.qty} ${item.unit}`)
+        .join(', ');
+
+    const message = `Hello! Your order has been confirmed.\n\nItems: ${itemList}\nTotal: ₹${amount}\nInvoice ID: ${invoiceId}\n\nThank you for your order!`;
+
+    try {
+        await axios.post(
+            `https://graph.facebook.com/v18.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`,
+            {
+                messaging_product: "whatsapp",
+                to: customerPhone,
+                type: "text",
+                text: { body: message }
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${process.env.WHATSAPP_ACCESS_TOKEN}`,
+                    "Content-Type": "application/json"
+                }
+            }
+        );
+        console.log("WhatsApp confirmation sent to:", customerPhone);
+        return { sent: true, message };
+
+    } catch (error) {
+        console.error("notifyCustomer error:", error.message);
+        return { sent: false, message: null };
+    }
 };
 
 const functionRegistry = {
     parseOrder,
     createCustomer,
-    generateInvoice,
     updateInventory,
+    generateInvoice,
     notifyCustomer
 };
 

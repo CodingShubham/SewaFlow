@@ -16,7 +16,7 @@ const executeWorkflow = async (trigger, eventData, userId) => {
         status: "running"
     });
 
-    let currentInput = eventData;
+    let currentInput = { ...eventData, userId };
 
     for (const stepName of workflow.steps) {
 
