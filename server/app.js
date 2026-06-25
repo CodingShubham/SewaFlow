@@ -11,7 +11,10 @@ const testRoutes=require("./routes/testRoutes")
 const executionRoutes = require('./routes/executionRoutes');
 const webhookRoute = require('./routes/webhookRoute');
 
-app.use(cors());
+app.use(cors({
+    origin: 'http://localhost:5173',
+    credentials: true
+}));
 app.use(express.json());
 
 app.use(cookieParser());
