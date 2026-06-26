@@ -10,6 +10,8 @@ const workFlowRoutes=require("./routes/workFlowRoute")
 const testRoutes=require("./routes/testRoutes")
 const executionRoutes = require('./routes/executionRoutes');
 const webhookRoute = require('./routes/webhookRoute');
+const customerRoutes = require('./routes/customerRoutes');
+const invoiceRoutes = require('./routes/invoiceRoutes');
 
 app.use(cors({
     origin: 'http://localhost:5173',
@@ -33,6 +35,8 @@ app.use("/api/workflows",workFlowRoutes)
 app.use("/api/test",testRoutes)
 app.use('/api/executions', executionRoutes);
 app.use('/api/webhook', webhookRoute);
+app.use('/api/customers', customerRoutes);
+app.use('/api/invoices', invoiceRoutes);
 
 app.listen(PORT,()=>{
     console.log(`server listening on ${PORT}`);
