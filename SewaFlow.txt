@@ -1,0 +1,144 @@
+Automation Library page
+↓
+Owner sees existing automations (if any)
+↓
+Clicks "Create New Automation" button
+↓
+Modal or new screen opens showing three options:
+
+🧩 Ready-Made Automation
+🤖 Describe What You Want  
+⚙️ Build Custom Workflow
+
+↓
+Owner picks one — say Ready-Made
+↓
+Sees automation templates:
+
+📱 WhatsApp Order Automation
+📦 Inventory Alert Automation
+🧾 Invoice Automation
+📊 Google Sheets Sync
+
+↓
+Owner picks one — say WhatsApp Order Automation
+↓
+Configuration Wizard opens (multi-step)
+↓
+Step 1 — Connect WhatsApp
+Step 2 — Add Business Data
+Step 3 — Configure Rules
+Step 4 — Review
+Step 5 — Activate
+↓
+Backend creates:
+- AutomationConfig document
+- Workflow document (automatically from template)
+- Automation document (active)
+↓
+Owner lands back on Automation Library
+↓
+Sees their new automation running
+
+
+
+Build sequence — starting now
+
+Backend first — no UI yet:
+
+
+
+BusinessConfig model
+
+Automation model
+
+AutomationConfig model
+
+APIs for all three
+
+Update webhook to use BusinessConfig
+
+Update engine to use AutomationConfig
+
+Template system for WhatsApp Order Automation
+
+
+
+Frontend second:
+
+
+
+Automation Library page
+
+Configuration Wizard — multi step
+
+Activation flow
+
+Dashboard updates to reflect real automation status
+
+
+
+
+Bulding BusinessConfig model---------->  
+
+--Why we need BusinessCongig Schema
+
+=>It is the per-user WhatsApp connection record stored in MongoDB instead of in a file.
+Every business owner who connects their WhatsApp gets one BusinessConfig document in the database — containing their specific credentials, scoped to their userId.
+
+
+Message arrives from phone number 918809074258
+↓
+Webhook reads phone_number_id from incoming payload
+↓
+Finds BusinessConfig where phoneNumberId matches
+↓
+Loads that specific owner's credentials and userId
+↓
+Runs workflow for the correct owner
+↓
+Uses that owner's inventory, customers, invoices
+
+
+
+We refactored the architecture to make it more scalable. Instead of embedding WhatsApp-specific fields inside BusinessConfig, we separated them into a dedicated Integration model. Now BusinessConfig stores only business information, while all external services (WhatsApp today, TikTok, Google Sheets, Shopify, etc. tomorrow) are managed through the generic Integration model. This avoids changing the business schema whenever a new integration is added.
+
+
+
+
+User
+ │
+ ├── BusinessConfig
+ │       ├── Business Name
+ │       ├── Industry
+ │       ├── Currency
+ │       └── Timezone
+ │
+ ├── Integrations
+ │       ├── WhatsApp
+ │       ├── Google Sheets
+ │       ├── Shopify
+ │       └── ...
+ │
+ ├── Automations
+ │       ├── WhatsApp Order Automation
+ │       ├── Inventory Alert Automation
+ │       └── Invoice Automation
+ │
+ └── AutomationConfig
+         ├── Data Source
+         ├── Invoice Mode
+         ├── Notifications
+         └── Out-of-Stock Behaviour
+                │
+                ▼
+            Workflow
+                │
+                ▼
+          Workflow Engine
+                │
+                ▼
+            Function Registry
+                │
+                ▼
+             Executions
