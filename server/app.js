@@ -13,6 +13,7 @@ const webhookRoute = require('./routes/webhookRoute');
 const customerRoutes = require('./routes/customerRoutes');
 const invoiceRoutes = require('./routes/invoiceRoutes');
 const inventoryRoutes = require('./routes/inventoryRoutes');
+const businessConfigRoute = require("./routes/businessConfigRoute");
 
 
 app.use(cors({
@@ -40,6 +41,7 @@ app.use('/api/webhook', webhookRoute);
 app.use('/api/customers', customerRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/inventory', inventoryRoutes);
+app.use("/api/business-config", businessConfigRoute);
 
 app.listen(PORT,()=>{
     console.log(`server listening on ${PORT}`);
