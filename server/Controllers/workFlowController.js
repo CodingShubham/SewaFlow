@@ -1,9 +1,17 @@
 const WorkFlow = require("../Model/WorkFlow");
+
 const createWorkFlow=async(req,res)=>{
 
     try{
 
-        const{name,trigger,steps}=req.body;
+          const {
+          businessConfigId,
+          name,
+          trigger,
+          steps,
+          template,
+          config} 
+          = req.body;
 
         // const exists=await WorkFlow.findOne({userId:req.user._id});
 
@@ -11,12 +19,15 @@ const createWorkFlow=async(req,res)=>{
         // return res.status(400).json({messsage:"Workflow already exists"})
         // }
 
-        const newWorkflow =await WorkFlow.create({
-            userId:req.user._id,
-            name,
-            trigger,
-            steps,
-        })
+              const newWorkflow = await WorkFlow.create({
+              userId: req.user._id,
+              businessConfigId,
+              name,
+              trigger,
+              steps,
+              template,
+              config
+          });
 
         res.status(201).json(newWorkflow );
 
@@ -64,11 +75,39 @@ const getWorkflowById = async (req, res) => {
 
 const updateWorkflow = async (req, res) => {
   try {
-    const workflow = await WorkFlow.findOneAndUpdate(
-      { _id: req.params.id, userId: req.user._id },
-      req.body,
-      { new: true }
-    );
+
+    const updateData = {};
+
+if (req.body.name !== undefined)
+    updateData.name = req.body.name;
+
+if (req.body.trigger !== undefined)
+    updateData.trigger = req.body.trigger;
+
+if (req.body.steps !== undefined)
+    updateData.steps = req.body.steps;
+
+if (req.body.template !== undefined)
+    updateData.template = req.body.template;
+
+if (req.body.config !== undefined)
+    updateData.config = req.body.config;
+
+if (req.body.isActive !== undefined)
+    updateData.isActive = req.body.isActive;
+
+const workflow = await WorkFlow.findOneAndUpdate(
+    {
+        _id: req.params.id,
+        userId: req.user._id
+    },
+    updateData,
+    {
+        new: true,
+        runValidators: true
+    }
+);
+
     if (!workflow) {
       return res.status(404).json({ message: 'Workflow not found' });
     }
