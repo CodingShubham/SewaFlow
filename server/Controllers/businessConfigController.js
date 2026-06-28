@@ -108,7 +108,7 @@ const BusinessConfig=require("../Model/BusinessConfig")
 
     const updateBusinessConfig = async (req, res) => {
     try {
-        const userId = req.user.id;
+        const userId = req.user._id;
 
         const {
             businessName,

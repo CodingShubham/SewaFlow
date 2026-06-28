@@ -49,8 +49,10 @@ const createCustomer = async (input) => {
 };
 
 const updateInventory = async (input) => {
-    const { items, userId } = input;
+    const { items, userId, workflow } = input;
     const updatedItems = [];
+
+    const outOfStockBehaviour = workflow?.config?.outOfStockBehaviour || "notify";
 
     for (const item of items) {
         const inventoryItem = await Inventory.findOne({
@@ -70,14 +72,16 @@ const updateInventory = async (input) => {
             });
             console.log(`Updated inventory for ${item.name}: ${inventoryItem.quantity} remaining`);
         } else {
+            console.log(`Item not found in inventory: ${item.name} — behaviour: ${outOfStockBehaviour}`);
             updatedItems.push({
                 name: item.name,
                 qty: item.qty,
                 unit: item.unit,
                 pricePerUnit: 0,
-                total: 0
+                total: 0,
+                outOfStock: true,
+                behaviour: outOfStockBehaviour
             });
-            console.log(`Item not found in inventory: ${item.name}`);
         }
     }
 
@@ -85,7 +89,19 @@ const updateInventory = async (input) => {
 };
 
 const generateInvoice = async (input) => {
-    const { customerId, userId, items } = input;
+    const { customerId, userId, items, workflow } = input;
+
+    const invoiceMode = workflow?.config?.invoiceMode || "automatic";
+
+    if (invoiceMode === "manual") {
+        console.log("Invoice mode is manual — skipping auto generation");
+        return {
+            invoiceId: null,
+            amount: 0,
+            items,
+            pendingApproval: true
+        };
+    }
 
     const totalAmount = items.reduce((sum, item) => sum + (item.total || 0), 0);
 
@@ -106,7 +122,17 @@ const generateInvoice = async (input) => {
 };
 
 const notifyCustomer = async (input) => {
-    const { customerPhone, invoiceId, amount, items } = input;
+    const { customerPhone, invoiceId, amount, items, integration, workflow } = input;
+
+    const notificationsEnabled = workflow?.config?.notificationsEnabled !== false;
+
+    if (!notificationsEnabled) {
+        console.log("Notifications disabled — skipping WhatsApp confirmation");
+        return { sent: false, message: null };
+    }
+
+    const accessToken = integration?.accessToken || process.env.WHATSAPP_ACCESS_TOKEN;
+    const phoneNumberId = integration?.phoneNumberId || process.env.WHATSAPP_PHONE_NUMBER_ID;
 
     const itemList = items
         .map(item => `${item.name} x${item.qty} ${item.unit}`)
@@ -116,7 +142,7 @@ const notifyCustomer = async (input) => {
 
     try {
         await axios.post(
-            `https://graph.facebook.com/v18.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`,
+            `https://graph.facebook.com/v18.0/${phoneNumberId}/messages`,
             {
                 messaging_product: "whatsapp",
                 to: customerPhone,
@@ -125,7 +151,7 @@ const notifyCustomer = async (input) => {
             },
             {
                 headers: {
-                    Authorization: `Bearer ${process.env.WHATSAPP_ACCESS_TOKEN}`,
+                    Authorization: `Bearer ${accessToken}`,
                     "Content-Type": "application/json"
                 }
             }

@@ -9,6 +9,8 @@ const createIntegration = async (req, res) => {
             type
         });
 
+       
+
         if (existing) {
             return res.status(400).json({ message: `${type} integration already exists` });
         }
