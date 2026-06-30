@@ -3,10 +3,11 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import Executions from './pages/Executions';
-import Workflows from './pages/Workflows';
 import Customers from './pages/Customers';
 import Inventory from './pages/Inventory';
 import Invoices from './pages/Invoices';
+import BusinessSetup from "./pages/BusinessSetup/BusinessSetup";
+import Integrations from "./components/Integrations/Integrations";
 
 function App() {
   return (
@@ -17,10 +18,14 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/executions" element={<Executions />} />
-        <Route path="/workflows" element={<Workflows />} />
+        <Route path="/business-setup"element={<BusinessSetup />}/>
         <Route path="/customers" element={<Customers />} />
         <Route path="/inventory" element={<Inventory />} />
         <Route path="/invoices" element={<Invoices />} />
+        <Route
+    path="/integrations"
+    element={<Integrations />}
+/>
       </Routes>
     </BrowserRouter>
   );

@@ -4,7 +4,7 @@ import API from '../api/axios';
 const navItems = [
     { label: 'Dashboard', path: '/dashboard', icon: 'ti-home' },
     { label: 'Executions', path: '/executions', icon: 'ti-player-play' },
-    { label: 'Workflows', path: '/workflows', icon: 'ti-settings' },
+    { label: 'Automations', path: '/automations', icon: 'ti-robot' },
     { label: 'Customers', path: '/customers', icon: 'ti-users' },
     { label: 'Inventory', path: '/inventory', icon: 'ti-box' },
     { label: 'Invoices', path: '/invoices', icon: 'ti-file-invoice' },
