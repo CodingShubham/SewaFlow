@@ -8,6 +8,7 @@ import Inventory from './pages/Inventory';
 import Invoices from './pages/Invoices';
 import BusinessSetup from "./pages/BusinessSetup/BusinessSetup";
 import Integrations from "./components/Integrations/Integrations";
+import CreateAutomation from "./pages/CreateAutomation"
 
 function App() {
   return (
@@ -22,6 +23,10 @@ function App() {
         <Route path="/customers" element={<Customers />} />
         <Route path="/inventory" element={<Inventory />} />
         <Route path="/invoices" element={<Invoices />} />
+        <Route
+    path="/create-automation"
+    element={<CreateAutomation />}
+/>
         <Route
     path="/integrations"
     element={<Integrations />}
