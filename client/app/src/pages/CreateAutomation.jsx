@@ -1,27 +1,68 @@
-import { useState,useEffect } from "react";
+import { useState, useEffect } from "react";
 import TemplateCard from "../components/automation/TemplateCard";
 import StepIndicator from "../components/automation/StepIndicator";
 import { templates } from "../data/templates";
 import { STEPS } from "../data/wizardSteps";
 import BusinessSetupForm from "../components/business/BusinessSetupForm";
+import StartMethod from "../components/automation/StartMethod";
+import { getBusinessConfig } from "../services/businessConfigService";
 
 
 const CreateAutomation = () => {
-    const [currentStep, setCurrentStep] = useState(STEPS.TEMPLATE);
+    const [currentStep, setCurrentStep] = useState(STEPS.START);
     const [wizardData, setWizardData] = useState({
+        creationMethod: null,
         template: null,
         businessConfig: null,
         integrations: [],
         configuration: {},
     });
 
-    useEffect(() => {
-    console.log("Wizard Data:", wizardData);
-}, [wizardData]);
+    const [checkingBusiness, setCheckingBusiness] = useState(false);
+
 
     const handleCreateAutomation = () => {
         console.log("Create automation", wizardData);
     };
+
+
+    const checkBusinessSetup = async () => {
+        try {
+            setCheckingBusiness(true);
+
+            const response = await getBusinessConfig();
+
+            if (response.success && response.data) {
+
+                console.log("Business already exists");
+
+                setWizardData(prev => ({
+                    ...prev,
+                    businessConfig: response.data,
+                }));
+
+                setCurrentStep(STEPS.INTEGRATIONS);
+
+            } else {
+
+                setCurrentStep(STEPS.BUSINESS);
+
+            }
+
+        } catch (error) {
+
+            console.log("Business profile not found");
+
+            setCurrentStep(STEPS.BUSINESS);
+
+        } finally {
+
+            setCheckingBusiness(false);
+
+        }
+    };
+
+
 
     return (
         <div className="min-h-screen bg-[#0F172A] p-8">
@@ -39,6 +80,23 @@ const CreateAutomation = () => {
                 <StepIndicator currentStep={currentStep} />
 
                 <div className="mt-10">
+
+                    {currentStep === STEPS.START && (
+
+                        <StartMethod
+
+                            selected={wizardData.creationMethod}
+
+                            onSelect={(method) =>
+                                setWizardData((prev) => ({
+                                    ...prev,
+                                    creationMethod: method,
+                                }))
+                            }
+
+                        />
+
+                    )}
 
                     {currentStep === STEPS.TEMPLATE && (
 
@@ -131,9 +189,15 @@ const CreateAutomation = () => {
                 <div className="flex justify-between mt-10">
 
                     <button
-                        // onClick={() => setCurrentStep((prev) => prev - 1)}
+
                         onClick={() => {
+
                             switch (currentStep) {
+
+                                case STEPS.TEMPLATE:
+                                    setCurrentStep(STEPS.START);
+                                    break;
+
                                 case STEPS.BUSINESS:
                                     setCurrentStep(STEPS.TEMPLATE);
                                     break;
@@ -152,20 +216,36 @@ const CreateAutomation = () => {
 
                                 default:
                                     break;
+
                             }
+
                         }}
-                        disabled={currentStep === STEPS.TEMPLATE}
+                        disabled={currentStep === STEPS.START}
                         className="px-6 py-3 rounded-xl border border-slate-700 text-slate-300 hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                         Back
                     </button>
 
                     <button
-                        disabled={currentStep === STEPS.TEMPLATE && !wizardData.template}
+                        disabled={
+                            checkingBusiness ||
+
+                            (currentStep === STEPS.START &&
+                                !wizardData.creationMethod) ||
+
+                            (currentStep === STEPS.TEMPLATE &&
+                                !wizardData.template)
+                        }
                         onClick={() => {
+
                             switch (currentStep) {
+
+                                case STEPS.START:
+                                    setCurrentStep(STEPS.TEMPLATE);
+                                    break;
+
                                 case STEPS.TEMPLATE:
-                                    setCurrentStep(STEPS.BUSINESS);
+                                    checkBusinessSetup();
                                     break;
 
                                 case STEPS.BUSINESS:
@@ -187,12 +267,19 @@ const CreateAutomation = () => {
                                 default:
                                     break;
                             }
+
                         }}
                         className="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
                     >
-                        {currentStep === STEPS.REVIEW
-                            ? "Create Automation"
-                            : "Continue"}
+
+                        {checkingBusiness
+                            ? "Checking Workspace..."
+                            : currentStep === STEPS.REVIEW
+                                ? "Create Automation"
+                                : currentStep === STEPS.START
+                                    ? "Next"
+                                    : "Continue"}
+
                     </button>
 
                 </div>

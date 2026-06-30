@@ -8,7 +8,7 @@ export const templates = [
     category: "Sales",
     icon: "📦",
     requirements: {
-      business: true,
+      businessConfig: true,
       integrations: ["whatsapp"],
     },
   },
@@ -21,7 +21,7 @@ export const templates = [
     category: "Finance",
     icon: "📄",
     requirements: {
-      business: true,
+      businessConfig: true,
       integrations: ["whatsapp"],
     },
   },

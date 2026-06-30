@@ -1,12 +1,17 @@
 export const STEPS = {
-    TEMPLATE: 1,
-    BUSINESS: 2,
-    INTEGRATIONS: 3,
-    CONFIGURATION: 4,
-    REVIEW: 5,
+    START: 1,
+    TEMPLATE: 2,
+    BUSINESS: 3,
+    INTEGRATIONS: 4,
+    CONFIGURATION: 5,
+    REVIEW: 6,
 };
 
 export const STEP_ITEMS = [
+    {
+        id: STEPS.START,
+        title: "Start",
+    },
     {
         id: STEPS.TEMPLATE,
         title: "Template",
@@ -21,7 +26,7 @@ export const STEP_ITEMS = [
     },
     {
         id: STEPS.CONFIGURATION,
-        title: "Configuration",
+        title: "Configure",
     },
     {
         id: STEPS.REVIEW,

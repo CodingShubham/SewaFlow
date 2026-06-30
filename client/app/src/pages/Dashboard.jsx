@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import API from '../api/axios';
+import { useNavigate } from "react-router-dom";
+
 
 const StatCard = ({ label, value, icon, color }) => (
     <div className="bg-[#161b27] border border-[#1e2130] rounded-xl p-4 flex items-center gap-4">
@@ -19,6 +21,7 @@ const Dashboard = () => {
     const [customers, setCustomers] = useState([]);
     const [invoices, setInvoices] = useState([]);
     const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchData = async () => {
@@ -44,9 +47,14 @@ const Dashboard = () => {
     const recentExecutions = executions.slice(0, 5);
 
     return (
+
+        
+
         <div className="flex min-h-screen bg-[#0f1117]">
+
             <Sidebar />
             <main className="flex-1 p-6">
+                
                 <p className="text-xl font-semibold text-white mb-6">Overview</p>
 
                 {loading ? (
