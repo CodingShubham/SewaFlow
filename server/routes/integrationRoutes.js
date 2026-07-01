@@ -16,7 +16,7 @@ router.get("/", authUser, getIntegrations);
 router.get("/:id", authUser, getIntegrationById);
 router.put("/:id", authUser, updateIntegration);
 router.delete("/:id", authUser, deleteIntegration);
-router.patch("/:id/connect", authUser, connectIntegration);
+router.put("/:id/connect", authUser, connectIntegration);
 router.patch("/:id/disconnect", authUser, disconnectIntegration);
 
 module.exports = router;

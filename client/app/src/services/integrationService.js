@@ -68,7 +68,7 @@ export const connectIntegration = async (id, credentials) => {
 */
 
 export const disconnectIntegration = async (id) => {
-    const response = await api.put(
+    const response = await api.patch(
         `/integrations/${id}/disconnect`
     );
 

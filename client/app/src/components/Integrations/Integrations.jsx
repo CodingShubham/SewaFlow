@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import ConnectModal from "../../components/integrations/ConnectModal";
+
 import {
     MessageCircle,
     Mail,
     CreditCard,
-    ShoppingBag,
-    ArrowLeft
+    ShoppingBag
 } from "lucide-react";
 
-import { useNavigate } from "react-router-dom";
+
 import IntegrationCard from "../../components/integrations/IntegrationCard";
 
 
@@ -17,9 +17,13 @@ import {
     createIntegration
 } from "../../services/integrationService";
 
-const Integrations = () => {
+const Integrations = ({
+    embedded = false,
+    requiredIntegrations = [],
+    onConnected,
+}) => {
 
-    const navigate = useNavigate();
+    
 
     const [integrations, setIntegrations] = useState([]);
 
@@ -114,6 +118,14 @@ const Integrations = () => {
 
     };
 
+
+    const visibleTemplates =
+    requiredIntegrations.length > 0
+        ? integrationTemplates.filter((template) =>
+              requiredIntegrations.includes(template.type)
+          )
+        : integrationTemplates;
+
     return (
 
         <div className="min-h-screen bg-[#0F172A]">
@@ -122,61 +134,53 @@ const Integrations = () => {
 
                 {/* HEADER */}
 
-                <div className="flex items-center justify-between mb-12">
+                {!embedded && (
+                    <div className="flex items-center justify-between mb-12">
 
-                    <div>
+                        <div>
 
-                        <button
-                            onClick={() => navigate(-1)}
-                            className="flex items-center gap-2 text-slate-400 hover:text-white transition mb-6"
-                        >
-                            <ArrowLeft size={18} />
 
-                            Back
+                            <h1 className="text-5xl font-bold text-white">
 
-                        </button>
+                                Integrations
 
-                        <h1 className="text-5xl font-bold text-white">
+                            </h1>
 
-                            Integrations
+                            <p className="text-slate-400 mt-3 text-lg">
 
-                        </h1>
-
-                        <p className="text-slate-400 mt-3 text-lg">
-
-                            Connect your favourite business tools to automate everything.
-
-                        </p>
-
-                    </div>
-
-                    <div className="hidden lg:flex">
-
-                        <div className="bg-slate-900 border border-slate-800 rounded-2xl px-6 py-4">
-
-                            <p className="text-slate-500 text-sm">
-
-                                Connected
+                               Connect the services required for this automation.
 
                             </p>
 
-                            <h2 className="text-3xl font-bold text-white">
+                        </div>
 
-                                {
+                        <div className="hidden lg:flex">
 
-                                    integrations.filter(
-                                        i => i.status === "connected"
-                                    ).length
+                            <div className="bg-slate-900 border border-slate-800 rounded-2xl px-6 py-4">
 
-                                }
+                                <p className="text-slate-500 text-sm">
 
-                            </h2>
+                                    Connected
+
+                                </p>
+
+                                <h2 className="text-3xl font-bold text-white">
+
+                                    {
+
+                                        integrations.filter(
+                                            i => i.status === "connected"
+                                        ).length
+
+                                    }
+
+                                </h2>
+
+                            </div>
 
                         </div>
 
-                    </div>
-
-                </div>
+                    </div>)}
 
                 {/* GRID */}
 
@@ -196,7 +200,7 @@ const Integrations = () => {
 
                             {
 
-                                integrationTemplates.map((item) => (
+                                visibleTemplates.map((item) => (
 
                                     <IntegrationCard
 
@@ -206,41 +210,41 @@ const Integrations = () => {
 
                                         integration={getIntegration(item.type)}
 
-                                       onConnect={async () => {
+                                        onConnect={async () => {
 
-    let existing = getIntegration(item.type);
+                                            let existing = getIntegration(item.type);
 
-    try {
+                                            try {
 
-        if (!existing) {
+                                                if (!existing) {
 
-            existing = await createIntegration({
+                                                    existing = await createIntegration({
 
-                type: item.type,
+                                                        type: item.type,
 
-                credentials: {}
+                                                        credentials: {}
 
-            });
+                                                    });
 
-            await loadIntegrations();
+                                                    await loadIntegrations();
 
-        }
+                                                }
 
-        setSelectedIntegration(existing);
+                                                setSelectedIntegration(existing);
 
-        setShowModal(true);
+                                                setShowModal(true);
 
-    }
+                                            }
 
-    catch (err) {
+                                            catch (err) {
 
-        console.log(err);
+                                                console.log(err);
 
-        alert("Unable to create integration.");
+                                                alert("Unable to create integration.");
 
-    }
+                                            }
 
-}}
+                                        }}
 
                                         refresh={loadIntegrations}
 

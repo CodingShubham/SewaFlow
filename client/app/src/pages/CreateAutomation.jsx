@@ -6,6 +6,7 @@ import { STEPS } from "../data/wizardSteps";
 import BusinessSetupForm from "../components/business/BusinessSetupForm";
 import StartMethod from "../components/automation/StartMethod";
 import { getBusinessConfig } from "../services/businessConfigService";
+import IntegrationStep from "../components/Integrations/IntegrationStep";
 
 
 const CreateAutomation = () => {
@@ -148,17 +149,24 @@ const CreateAutomation = () => {
                         />
                     )}
 
-                    {currentStep === STEPS.INTEGRATIONS && (
-                        <div className="bg-[#111827] border border-slate-800 rounded-2xl p-8">
-                            <h2 className="text-2xl font-semibold text-white">
-                                Integrations
-                            </h2>
+                  {currentStep === STEPS.INTEGRATIONS && (
+    <IntegrationStep
+        requiredIntegrations={
+            wizardData.template?.requirements?.integrations || []
+        }
+        onSuccess={(connectedIntegrations) => {
+            console.log(
+                "Received Connected Integrations:",
+                connectedIntegrations
+            );
 
-                            <p className="text-slate-400 mt-2">
-                                Your existing Integration page will be shown here.
-                            </p>
-                        </div>
-                    )}
+            setWizardData((prev) => ({
+                ...prev,
+                integrations: connectedIntegrations,
+            }));
+        }}
+    />
+)}
 
                     {currentStep === STEPS.CONFIGURATION && (
                         <div className="bg-[#111827] border border-slate-800 rounded-2xl p-8">
@@ -234,7 +242,10 @@ const CreateAutomation = () => {
                                 !wizardData.creationMethod) ||
 
                             (currentStep === STEPS.TEMPLATE &&
-                                !wizardData.template)
+                                !wizardData.template) ||
+
+                            (currentStep === STEPS.INTEGRATIONS &&
+                            wizardData.integrations.length === 0)
                         }
                         onClick={() => {
 

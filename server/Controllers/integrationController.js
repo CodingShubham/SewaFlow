@@ -90,24 +90,62 @@ const deleteIntegration = async (req, res) => {
     }
 };
 
+// const connectIntegration = async (req, res) => {
+//     try {
+//         const integration = await Integration.findOneAndUpdate(
+//             { _id: req.params.id, userId: req.user._id },
+//             {
+//                 status: "connected",
+//                 credentials: { ...req.body.credentials }
+//             },
+//             { new: true }
+//         );
+
+//         if (!integration) {
+//             return res.status(404).json({ message: "Integration not found" });
+//         }
+
+//         res.status(200).json(integration);
+//     } catch (error) {
+//         res.status(500).json({ message: error.message });
+//     }
+// };
+
+
+
+
+
 const connectIntegration = async (req, res) => {
     try {
+
         const integration = await Integration.findOneAndUpdate(
-            { _id: req.params.id, userId: req.user._id },
+            {
+                _id: req.params.id,
+                userId: req.user._id
+            },
             {
                 status: "connected",
-                credentials: { ...req.body.credentials }
+                credentials: req.body
             },
-            { new: true }
+            {
+                new: true
+            }
         );
 
         if (!integration) {
-            return res.status(404).json({ message: "Integration not found" });
+            return res.status(404).json({
+                message: "Integration not found"
+            });
         }
 
         res.status(200).json(integration);
+
     } catch (error) {
-        res.status(500).json({ message: error.message });
+
+        res.status(500).json({
+            message: error.message
+        });
+
     }
 };
 
