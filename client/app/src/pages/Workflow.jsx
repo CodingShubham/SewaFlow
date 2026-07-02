@@ -215,15 +215,12 @@ const Workflow = () => {
 
                             <div className="mt-8 flex gap-3">
 
-                                <button
-
-                                    className="flex-1 rounded-xl bg-blue-600 hover:bg-blue-500 py-3 text-white"
-
-                                >
-
-                                    Open
-
-                                </button>
+                           <button
+    onClick={() => navigate(`/workflows/${workflow._id}`)}
+    className="flex-1 rounded-xl bg-blue-600 hover:bg-blue-500 py-3 text-white"
+>
+    Open
+</button>
 
                                 <button
 

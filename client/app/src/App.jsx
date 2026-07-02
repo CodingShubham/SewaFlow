@@ -10,6 +10,7 @@ import BusinessSetup from "./pages/BusinessSetup/BusinessSetup";
 import Integrations from "./components/Integrations/Integrations";
 import CreateAutomation from "./pages/CreateAutomation"
 import Workflow from "./pages/Workflow";
+ import WorkflowDetails from "./pages/WorkflowDetails";
 
 function App() {
   return (
@@ -24,6 +25,10 @@ function App() {
         <Route path="/customers" element={<Customers />} />
         <Route path="/inventory" element={<Inventory />} />
         <Route path="/invoices" element={<Invoices />} />
+        <Route
+    path="/workflows/:id"
+    element={<WorkflowDetails />}
+/>
         <Route
     path="/workflow"
     element={<Workflow />}
