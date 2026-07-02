@@ -57,7 +57,16 @@ const workflowSchema = new mongoose.Schema({
         notificationsEnabled: {
             type: Boolean,
             default: true
-        }
+        },
+
+
+    approvalMode: {
+    type: String,
+    enum: ["automatic", "manual"],
+    default: "automatic"
+},
+
+
 
     },
 

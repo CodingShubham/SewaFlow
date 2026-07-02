@@ -4,14 +4,39 @@ const createWorkFlow=async(req,res)=>{
 
     try{
 
-          const {
-          businessConfigId,
-          name,
-          trigger,
-          steps,
-          template,
-          config} 
-          = req.body;
+        const {
+        businessConfigId,
+        name,
+        template,
+        config
+    } = req.body;
+
+    let trigger = "";
+    let steps = [];
+
+    switch (template) {
+
+    case "whatsapp-order":
+
+        trigger = "whatsapp_message";
+
+        steps = [
+            "parseOrder",
+            "createCustomer",
+            "updateInventory",
+            "generateInvoice",
+            "notifyCustomer"
+        ];
+
+        break;
+
+    default:
+
+        return res.status(400).json({
+            message: "Unknown template"
+        });
+
+}
 
         // const exists=await WorkFlow.findOne({userId:req.user._id});
 
