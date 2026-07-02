@@ -8,7 +8,7 @@ import StartMethod from "../components/automation/StartMethod";
 import { getBusinessConfig } from "../services/businessConfigService";
 import IntegrationStep from "../components/Integrations/IntegrationStep";
 import ConfigurationRenderer from "../components/configuration/ConfigurationRenderer";
-
+import ReviewStep from "../components/automation/ReviewStep";
 
 const CreateAutomation = () => {
     const [currentStep, setCurrentStep] = useState(STEPS.START);
@@ -192,17 +192,19 @@ const CreateAutomation = () => {
 
 )}
 
-                    {currentStep === STEPS.REVIEW && (
-                        <div className="bg-[#111827] border border-slate-800 rounded-2xl p-8">
-                            <h2 className="text-2xl font-semibold text-white">
-                                Review Automation
-                            </h2>
+                   {currentStep === STEPS.REVIEW && (
 
-                            <p className="text-slate-400 mt-2">
-                                Review everything before creating your automation.
-                            </p>
-                        </div>
-                    )}
+    <ReviewStep
+
+        template={wizardData.template}
+
+        integrations={wizardData.integrations}
+
+        configuration={wizardData.configuration}
+
+    />
+
+)}
 
                 </div>
 
