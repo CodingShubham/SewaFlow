@@ -9,6 +9,7 @@ import { getBusinessConfig } from "../services/businessConfigService";
 import IntegrationStep from "../components/Integrations/IntegrationStep";
 import ConfigurationRenderer from "../components/configuration/ConfigurationRenderer";
 import ReviewStep from "../components/automation/ReviewStep";
+import { createWorkflow } from "../services/workflowService";
 
 const CreateAutomation = () => {
     const [currentStep, setCurrentStep] = useState(STEPS.START);
@@ -23,9 +24,54 @@ const CreateAutomation = () => {
     const [checkingBusiness, setCheckingBusiness] = useState(false);
 
 
-    const handleCreateAutomation = () => {
-        console.log("Create automation", wizardData);
-    };
+    const handleCreateAutomation = async () => {
+
+    try {
+
+        const payload = {
+
+            businessConfigId:
+                wizardData.businessConfig._id,
+
+            name:
+                wizardData.template.title,
+
+            template:
+                wizardData.template.id,
+
+            config:
+                wizardData.configuration
+
+        };
+
+        console.log("Workflow Payload:", payload);
+
+        const workflow = await createWorkflow(payload);
+
+        console.log("Workflow Created:", workflow);
+
+        alert("Automation created successfully!");
+
+        // We'll redirect later
+        // navigate("/workflows");
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        alert(
+
+            error.response?.data?.message ||
+
+            "Unable to create automation."
+
+        );
+
+    }
+
+};
 
 
     const checkBusinessSetup = async () => {
@@ -121,15 +167,15 @@ const CreateAutomation = () => {
                                         {...template}
                                         selected={wizardData.template?.id === template.id}
                                         onClick={() =>
-                                        setWizardData((prev) => ({
-                                            ...prev,
-                                            template,
-                                            configuration: {
-                                                ...template.defaultConfiguration
-                                            }
-                                        }))
-                                    }
-                                     />
+                                            setWizardData((prev) => ({
+                                                ...prev,
+                                                template,
+                                                configuration: {
+                                                    ...template.defaultConfiguration
+                                                }
+                                            }))
+                                        }
+                                    />
 
                                 ))}
 
@@ -153,58 +199,58 @@ const CreateAutomation = () => {
                         />
                     )}
 
-                  {currentStep === STEPS.INTEGRATIONS && (
-    <IntegrationStep
-        requiredIntegrations={
-            wizardData.template?.requirements?.integrations || []
-        }
-        onSuccess={(connectedIntegrations) => {
-            console.log(
-                "Received Connected Integrations:",
-                connectedIntegrations
-            );
+                    {currentStep === STEPS.INTEGRATIONS && (
+                        <IntegrationStep
+                            requiredIntegrations={
+                                wizardData.template?.requirements?.integrations || []
+                            }
+                            onSuccess={(connectedIntegrations) => {
+                                console.log(
+                                    "Received Connected Integrations:",
+                                    connectedIntegrations
+                                );
 
-            setWizardData((prev) => ({
-                ...prev,
-                integrations: connectedIntegrations,
-            }));
-        }}
-    />
-)}
-{currentStep === STEPS.CONFIGURATION && (
+                                setWizardData((prev) => ({
+                                    ...prev,
+                                    integrations: connectedIntegrations,
+                                }));
+                            }}
+                        />
+                    )}
+                    {currentStep === STEPS.CONFIGURATION && (
 
-    <ConfigurationRenderer
+                        <ConfigurationRenderer
 
-        template={wizardData.template}
+                            template={wizardData.template}
 
-        value={wizardData.configuration}
+                            value={wizardData.configuration}
 
-        onChange={(configuration) =>
+                            onChange={(configuration) =>
 
-            setWizardData(prev => ({
-                ...prev,
-                configuration
-            }))
+                                setWizardData(prev => ({
+                                    ...prev,
+                                    configuration
+                                }))
 
-        }
+                            }
 
-    />
+                        />
 
-)}
+                    )}
 
-                   {currentStep === STEPS.REVIEW && (
+                    {currentStep === STEPS.REVIEW && (
 
-    <ReviewStep
+                        <ReviewStep
 
-        template={wizardData.template}
+                            template={wizardData.template}
 
-        integrations={wizardData.integrations}
+                            integrations={wizardData.integrations}
 
-        configuration={wizardData.configuration}
+                            configuration={wizardData.configuration}
 
-    />
+                        />
 
-)}
+                    )}
 
                 </div>
 
@@ -259,7 +305,7 @@ const CreateAutomation = () => {
                                 !wizardData.template) ||
 
                             (currentStep === STEPS.INTEGRATIONS &&
-                            wizardData.integrations.length === 0)
+                                wizardData.integrations.length === 0)
                         }
                         onClick={() => {
 

@@ -9,6 +9,7 @@ import Invoices from './pages/Invoices';
 import BusinessSetup from "./pages/BusinessSetup/BusinessSetup";
 import Integrations from "./components/Integrations/Integrations";
 import CreateAutomation from "./pages/CreateAutomation"
+import Workflow from "./pages/Workflow";
 
 function App() {
   return (
@@ -23,6 +24,10 @@ function App() {
         <Route path="/customers" element={<Customers />} />
         <Route path="/inventory" element={<Inventory />} />
         <Route path="/invoices" element={<Invoices />} />
+        <Route
+    path="/workflow"
+    element={<Workflow />}
+/>
         <Route
     path="/create-automation"
     element={<CreateAutomation />}
