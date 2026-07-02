@@ -1,17 +1,51 @@
 export const templates = [
-  {
+
+{
     id: "whatsapp-order",
+
     title: "WhatsApp Order Automation",
-    workflowType: "whatsapp-order",
-    description:
-      "Automatically convert WhatsApp orders into customers, invoices, and inventory updates.",
-    category: "Sales",
-    icon: "📦",
+
+    description: "Automatically process customer orders from WhatsApp.",
+
     requirements: {
-      businessConfig: true,
-      integrations: ["whatsapp"],
+        integrations: ["whatsapp"]
     },
-  },
+
+    execution: {
+
+        trigger: "whatsapp_message",
+
+        functions: [
+
+            "parseOrder",
+
+            "createCustomer",
+
+            "updateInventory",
+
+            "generateInvoice",
+
+            "notifyCustomer"
+
+        ]
+
+    },
+
+    defaultConfiguration: {
+
+        approvalMode: "automatic",
+
+        outOfStockBehaviour: "notify",
+
+        invoiceMode: "automatic",
+
+        notificationsEnabled: true
+
+    }
+
+},
+
+
   {
     id: "invoice-reminder",
     title: "Invoice Reminder",

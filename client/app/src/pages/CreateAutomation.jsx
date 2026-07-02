@@ -7,6 +7,7 @@ import BusinessSetupForm from "../components/business/BusinessSetupForm";
 import StartMethod from "../components/automation/StartMethod";
 import { getBusinessConfig } from "../services/businessConfigService";
 import IntegrationStep from "../components/Integrations/IntegrationStep";
+import ConfigurationRenderer from "../components/configuration/ConfigurationRenderer";
 
 
 const CreateAutomation = () => {
@@ -120,12 +121,15 @@ const CreateAutomation = () => {
                                         {...template}
                                         selected={wizardData.template?.id === template.id}
                                         onClick={() =>
-                                            setWizardData((prev) => ({
-                                                ...prev,
-                                                template,
-                                            }))
-                                        }
-                                    />
+                                        setWizardData((prev) => ({
+                                            ...prev,
+                                            template,
+                                            configuration: {
+                                                ...template.defaultConfiguration
+                                            }
+                                        }))
+                                    }
+                                     />
 
                                 ))}
 
@@ -167,18 +171,26 @@ const CreateAutomation = () => {
         }}
     />
 )}
+{currentStep === STEPS.CONFIGURATION && (
 
-                    {currentStep === STEPS.CONFIGURATION && (
-                        <div className="bg-[#111827] border border-slate-800 rounded-2xl p-8">
-                            <h2 className="text-2xl font-semibold text-white">
-                                Automation Configuration
-                            </h2>
+    <ConfigurationRenderer
 
-                            <p className="text-slate-400 mt-2">
-                                Configure triggers, actions and AI settings.
-                            </p>
-                        </div>
-                    )}
+        template={wizardData.template}
+
+        value={wizardData.configuration}
+
+        onChange={(configuration) =>
+
+            setWizardData(prev => ({
+                ...prev,
+                configuration
+            }))
+
+        }
+
+    />
+
+)}
 
                     {currentStep === STEPS.REVIEW && (
                         <div className="bg-[#111827] border border-slate-800 rounded-2xl p-8">
