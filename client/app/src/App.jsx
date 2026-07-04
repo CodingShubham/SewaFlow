@@ -10,7 +10,9 @@ import BusinessSetup from "./pages/BusinessSetup/BusinessSetup";
 import Integrations from "./components/Integrations/Integrations";
 import CreateAutomation from "./pages/CreateAutomation"
 import Workflow from "./pages/Workflow";
- import WorkflowDetails from "./pages/WorkflowDetails";
+import WorkflowDetails from "./pages/WorkflowDetails";
+import EditWorkflow from "./pages/EditWorkflow";
+
 
 function App() {
   return (
@@ -29,6 +31,14 @@ function App() {
     path="/workflows/:id"
     element={<WorkflowDetails />}
 />
+
+<Route
+
+    path="/workflows/:id/edit"
+
+    element={<EditWorkflow />}
+
+/>
         <Route
     path="/workflow"
     element={<Workflow />}
@@ -40,6 +50,7 @@ function App() {
         <Route
     path="/integrations"
     element={<Integrations />}
+
 />
       </Routes>
     </BrowserRouter>

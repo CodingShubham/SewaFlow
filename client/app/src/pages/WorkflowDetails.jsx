@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import { ArrowLeft } from "lucide-react";
-import { getWorkflow } from "../services/workflowService";
+import { getWorkflow, updateWorkflow,deleteWorkflow } from "../services/workflowService";
 
 const WorkflowDetails = () => {
 
@@ -64,6 +64,62 @@ const WorkflowDetails = () => {
 
     }
 
+    const handleToggleStatus = async () => {
+
+    try {
+
+        const updated = await updateWorkflow(
+
+            workflow._id,
+
+            {
+
+                isActive: !workflow.isActive
+
+            }
+
+        );
+
+        setWorkflow(updated);
+
+    }
+
+    catch (error) {
+
+        console.log(error);
+
+    }
+
+};
+
+
+  const handleDelete = async () => {
+
+    const confirmed = window.confirm(
+
+        "Are you sure you want to delete this workflow?"
+
+    );
+
+    if (!confirmed) return;
+
+    try {
+
+        await deleteWorkflow(workflow._id);
+
+        navigate("/workflow");
+
+    }
+
+    catch (error) {
+
+        console.log(error);
+
+    }
+
+};
+
+
     return (
 
         <div className="flex min-h-screen bg-[#0f1117]">
@@ -76,7 +132,7 @@ const WorkflowDetails = () => {
 
                 <button
 
-                    onClick={() => navigate("/workflows")}
+                    onClick={() => navigate("/workflow")}
 
                     className="flex items-center gap-2 text-slate-400 hover:text-white"
 
@@ -110,11 +166,10 @@ const WorkflowDetails = () => {
 
                     <span
 
-                        className={`px-4 py-2 rounded-full text-sm font-medium ${
-                            workflow.isActive
+                        className={`px-4 py-2 rounded-full text-sm font-medium ${workflow.isActive
                                 ? "bg-green-500/20 text-green-400"
                                 : "bg-slate-700 text-slate-300"
-                        }`}
+                            }`}
 
                     >
 
@@ -286,23 +341,45 @@ const WorkflowDetails = () => {
 
                     <div className="flex gap-4 mt-6">
 
-                        <button className="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white">
+                        <button
+
+                            onClick={() => navigate(`/workflows/${workflow._id}/edit`)}
+
+                            className="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white"
+
+                        >
 
                             Edit
 
                         </button>
 
-                        <button className="px-6 py-3 rounded-xl bg-yellow-600 hover:bg-yellow-500 text-white">
+                            <button
 
-                            Pause
+    onClick={handleToggleStatus}
 
-                        </button>
+    className={`px-6 py-3 rounded-xl text-white ${
+        workflow.isActive
+            ? "bg-yellow-600 hover:bg-yellow-500"
+            : "bg-green-600 hover:bg-green-500"
+    }`}
 
-                        <button className="px-6 py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white">
+>
 
-                            Delete
+    {workflow.isActive ? "Pause" : "Activate"}
 
-                        </button>
+</button>
+
+                   <button
+
+    onClick={handleDelete}
+
+    className="px-6 py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white"
+
+>
+
+    Delete
+
+</button>
 
                     </div>
 
