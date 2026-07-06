@@ -4,7 +4,7 @@ import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import Executions from './pages/Executions';
 import Customers from './pages/Customers';
-import Inventory from './pages/Inventory';
+import Products from './pages/Products';
 import Invoices from './pages/Invoices';
 import BusinessSetup from "./pages/BusinessSetup/BusinessSetup";
 import Integrations from "./components/Integrations/Integrations";
@@ -25,7 +25,7 @@ function App() {
         <Route path="/executions" element={<Executions />} />
         <Route path="/business-setup"element={<BusinessSetup />}/>
         <Route path="/customers" element={<Customers />} />
-        <Route path="/inventory" element={<Inventory />} />
+       <Route path="/products" element={<Products />} />
         <Route path="/invoices" element={<Invoices />} />
         <Route
     path="/workflows/:id"

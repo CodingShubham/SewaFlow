@@ -1,7 +1,7 @@
 const Groq = require("groq-sdk");
 const { parseOrderPrompt } = require("./Prompts");
 const Customer = require("../Model/Customer");
-const Inventory = require("../Model/Inventory");
+const Product = require("../Model/Product");
 const Invoice = require("../Model/Invoice");
 const axios = require("axios");
 
@@ -50,42 +50,60 @@ const createCustomer = async (input) => {
 
 const updateInventory = async (input) => {
     const { items, userId, workflow } = input;
-    const updatedItems = [];
 
-    const outOfStockBehaviour = workflow?.config?.outOfStockBehaviour || "notify";
+    const updatedItems = [];
+    const outOfStockBehaviour =
+        workflow?.config?.outOfStockBehaviour || "notify";
 
     for (const item of items) {
-        const inventoryItem = await Inventory.findOne({
+
+        const product = await Product.findOne({
             userId,
-            itemName: { $regex: new RegExp(item.name, 'i') }
+            name: { $regex: new RegExp(`^${item.name}$`, "i") },
+            active: true
         });
 
-        if (inventoryItem) {
-            inventoryItem.quantity -= item.qty;
-            await inventoryItem.save();
+        if (product) {
+
+            product.stock -= item.qty;
+            await product.save();
+
             updatedItems.push({
-                name: item.name,
+                productId: product._id,
+                name: product.name,
                 qty: item.qty,
-                unit: item.unit,
-                pricePerUnit: inventoryItem.pricePerUnit,
-                total: item.qty * inventoryItem.pricePerUnit
+                unit: product.unit,
+                price: product.price,
+                total: item.qty * product.price
             });
-            console.log(`Updated inventory for ${item.name}: ${inventoryItem.quantity} remaining`);
+
+            console.log(
+                `Updated product ${product.name}: ${product.stock} remaining`
+            );
+
         } else {
-            console.log(`Item not found in inventory: ${item.name} — behaviour: ${outOfStockBehaviour}`);
+
+            console.log(
+                `Product not found: ${item.name} — behaviour: ${outOfStockBehaviour}`
+            );
+
             updatedItems.push({
                 name: item.name,
                 qty: item.qty,
                 unit: item.unit,
-                pricePerUnit: 0,
+                price: 0,
                 total: 0,
                 outOfStock: true,
                 behaviour: outOfStockBehaviour
             });
+
         }
     }
 
-    return { updated: true, items: updatedItems };
+    return {
+        updated: true,
+        items: updatedItems
+    };
 };
 
 const generateInvoice = async (input) => {

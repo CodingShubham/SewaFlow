@@ -6,7 +6,7 @@ const navItems = [
     { label: 'Executions', path: '/executions', icon: 'ti-player-play' },
     { label: 'Workflow', path: '/workflow', icon: 'ti-robot' },
     { label: 'Customers', path: '/customers', icon: 'ti-users' },
-    { label: 'Inventory', path: '/inventory', icon: 'ti-box' },
+    { label: 'Products', path: '/products', icon: 'ti-box' },
     { label: 'Invoices', path: '/invoices', icon: 'ti-file-invoice' },
 ];
 

@@ -12,7 +12,7 @@ const executionRoutes = require('./routes/executionRoutes');
 const webhookRoute = require('./routes/webhookRoute');
 const customerRoutes = require('./routes/customerRoutes');
 const invoiceRoutes = require('./routes/invoiceRoutes');
-const inventoryRoutes = require('./routes/inventoryRoutes');
+const productRoutes = require("./Routes/productRoutes");
 const businessConfigRoute = require("./routes/businessConfigRoute");
 const integrationRoutes = require('./routes/integrationRoutes');
 
@@ -21,6 +21,7 @@ app.use(cors({
     origin: 'http://localhost:5173',
     credentials: true
 }));
+
 app.use(express.json());
 
 app.use(cookieParser());
@@ -47,7 +48,7 @@ app.use('/api/executions', executionRoutes);
 app.use('/api/webhook', webhookRoute);
 app.use('/api/customers', customerRoutes);
 app.use('/api/invoices', invoiceRoutes);
-app.use('/api/inventory', inventoryRoutes);
+app.use("/api/products", productRoutes);
 app.use("/api/business-config", businessConfigRoute);
 app.use('/api/integrations', integrationRoutes);
 
