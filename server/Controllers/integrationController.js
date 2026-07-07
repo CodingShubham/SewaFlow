@@ -114,7 +114,6 @@ const deleteIntegration = async (req, res) => {
 
 
 
-
 const connectIntegration = async (req, res) => {
     try {
 
@@ -125,7 +124,7 @@ const connectIntegration = async (req, res) => {
             },
             {
                 status: "connected",
-                credentials: req.body
+                credentials: req.body.credentials
             },
             {
                 new: true

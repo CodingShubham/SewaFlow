@@ -11,6 +11,7 @@ import ConfigurationRenderer from "../components/configuration/ConfigurationRend
 import ReviewStep from "../components/automation/ReviewStep";
 import { createWorkflow } from "../services/workflowService";
 import BusinessData from "../pages/BusinessData";
+import Sidebar from "../components/Sidebar";
 
 const CreateAutomation = () => {
     const [currentStep, setCurrentStep] = useState(STEPS.START);
@@ -114,10 +115,17 @@ const CreateAutomation = () => {
 
 
 
-    return (
-        <div className="min-h-screen bg-[#0F172A] p-8">
+   return (
 
-            <div className="max-w-7xl mx-auto">
+    <div className="flex min-h-screen bg-[#0f1117]">
+
+        <Sidebar />
+
+        <main className="flex-1 overflow-y-auto">
+
+            <div className="max-w-7xl mx-auto p-8">
+
+                {/* Existing content starts here */}
 
                 <h1 className="text-3xl font-bold text-white">
                     Create Automation
@@ -388,7 +396,7 @@ const CreateAutomation = () => {
                 </div>
 
             </div>
-
+            </main>
         </div>
     );
 };
