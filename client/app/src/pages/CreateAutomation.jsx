@@ -10,6 +10,7 @@ import IntegrationStep from "../components/Integrations/IntegrationStep";
 import ConfigurationRenderer from "../components/configuration/ConfigurationRenderer";
 import ReviewStep from "../components/automation/ReviewStep";
 import { createWorkflow } from "../services/workflowService";
+import BusinessData from "../pages/BusinessData";
 
 const CreateAutomation = () => {
     const [currentStep, setCurrentStep] = useState(STEPS.START);
@@ -17,6 +18,7 @@ const CreateAutomation = () => {
         creationMethod: null,
         template: null,
         businessConfig: null,
+        dataSource: null,
         integrations: [],
         configuration: {},
     });
@@ -26,52 +28,52 @@ const CreateAutomation = () => {
 
     const handleCreateAutomation = async () => {
 
-    try {
+        try {
 
-        const payload = {
+            const payload = {
 
-            businessConfigId:
-                wizardData.businessConfig._id,
+                businessConfigId:
+                    wizardData.businessConfig._id,
 
-            name:
-                wizardData.template.title,
+                name:
+                    wizardData.template.title,
 
-            template:
-                wizardData.template.id,
+                template:
+                    wizardData.template.id,
 
-            config:
-                wizardData.configuration
+                config:
+                    wizardData.configuration
 
-        };
+            };
 
-        console.log("Workflow Payload:", payload);
+            console.log("Workflow Payload:", payload);
 
-        const workflow = await createWorkflow(payload);
+            const workflow = await createWorkflow(payload);
 
-        console.log("Workflow Created:", workflow);
+            console.log("Workflow Created:", workflow);
 
-        alert("Automation created successfully!");
+            alert("Automation created successfully!");
 
-        // We'll redirect later
-        // navigate("/workflows");
+            // We'll redirect later
+            // navigate("/workflows");
 
-    }
+        }
 
-    catch (error) {
+        catch (error) {
 
-        console.error(error);
+            console.error(error);
 
-        alert(
+            alert(
 
-            error.response?.data?.message ||
+                error.response?.data?.message ||
 
-            "Unable to create automation."
+                "Unable to create automation."
 
-        );
+            );
 
-    }
+        }
 
-};
+    };
 
 
     const checkBusinessSetup = async () => {
@@ -199,6 +201,28 @@ const CreateAutomation = () => {
                         />
                     )}
 
+
+
+                    {currentStep === STEPS.DATA_SOURCE && (
+
+                        <BusinessData
+                            embedded={true}
+                            onSuccess={(dataSource) => {
+
+                                setWizardData(prev => ({
+                                    ...prev,
+                                    dataSource
+                                }));
+
+                                setCurrentStep(STEPS.DATA_SOURCE);
+
+                            }}
+                        />
+
+                    )}
+
+
+
                     {currentStep === STEPS.INTEGRATIONS && (
                         <IntegrationStep
                             requiredIntegrations={
@@ -270,8 +294,12 @@ const CreateAutomation = () => {
                                     setCurrentStep(STEPS.TEMPLATE);
                                     break;
 
-                                case STEPS.INTEGRATIONS:
+                                case STEPS.DATA_SOURCE:
                                     setCurrentStep(STEPS.BUSINESS);
+                                    break;
+
+                                case STEPS.INTEGRATIONS:
+                                    setCurrentStep(STEPS.DATA_SOURCE);
                                     break;
 
                                 case STEPS.CONFIGURATION:
@@ -320,6 +348,10 @@ const CreateAutomation = () => {
                                     break;
 
                                 case STEPS.BUSINESS:
+                                    setCurrentStep(STEPS.DATA_SOURCE);
+                                    break;
+
+                                case STEPS.DATA_SOURCE:
                                     setCurrentStep(STEPS.INTEGRATIONS);
                                     break;
 

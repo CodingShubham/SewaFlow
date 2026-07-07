@@ -15,6 +15,7 @@ const invoiceRoutes = require('./routes/invoiceRoutes');
 const productRoutes = require("./Routes/productRoutes");
 const businessConfigRoute = require("./routes/businessConfigRoute");
 const integrationRoutes = require('./routes/integrationRoutes');
+const dataSourceRoutes = require("./routes/dataSourceRoutes");
 
 
 app.use(cors({
@@ -51,6 +52,7 @@ app.use('/api/invoices', invoiceRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/business-config", businessConfigRoute);
 app.use('/api/integrations', integrationRoutes);
+app.use("/api/data-source", dataSourceRoutes);
 
 app.listen(PORT,()=>{
     console.log(`server listening on ${PORT}`);

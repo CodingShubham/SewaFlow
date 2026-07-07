@@ -1,9 +1,9 @@
 const Groq = require("groq-sdk");
 const { parseOrderPrompt } = require("./Prompts");
 const Customer = require("../Model/Customer");
-const Product = require("../Model/Product");
 const Invoice = require("../Model/Invoice");
 const axios = require("axios");
+const productProvider = require("./productProvider");
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
@@ -57,11 +57,10 @@ const updateInventory = async (input) => {
 
     for (const item of items) {
 
-        const product = await Product.findOne({
-            userId,
-            name: { $regex: new RegExp(`^${item.name}$`, "i") },
-            active: true
-        });
+    const product = await productProvider.getProductByName(
+    userId,
+    item.name
+);
 
         if (product) {
 
@@ -73,7 +72,7 @@ const updateInventory = async (input) => {
                 name: product.name,
                 qty: item.qty,
                 unit: product.unit,
-                price: product.price,
+                pricePerUnit: product.price,
                 total: item.qty * product.price
             });
 

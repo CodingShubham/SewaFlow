@@ -2,13 +2,13 @@ const express = require("express");
 const router = express.Router();
 const authUser = require("../Middlewares/authMiddleware");
 const Product = require("../Model/Product");
+const productProvider = require("../services/productProvider");
 
 // Get all products
 router.get("/", authUser, async (req, res) => {
     try {
-        const products = await Product.find({
-            userId: req.user._id
-        }).sort({ createdAt: -1 });
+        
+        const products = await productProvider.getProducts(req.user._id);
 
         res.status(200).json(products);
 

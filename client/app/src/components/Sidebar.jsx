@@ -8,6 +8,7 @@ const navItems = [
     { label: 'Customers', path: '/customers', icon: 'ti-users' },
     { label: 'Products', path: '/products', icon: 'ti-box' },
     { label: 'Invoices', path: '/invoices', icon: 'ti-file-invoice' },
+    { label: "Business Data", path: "/business-data"},
 ];
 
 const Sidebar = () => {

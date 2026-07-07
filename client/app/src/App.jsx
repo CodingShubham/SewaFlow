@@ -12,6 +12,7 @@ import CreateAutomation from "./pages/CreateAutomation"
 import Workflow from "./pages/Workflow";
 import WorkflowDetails from "./pages/WorkflowDetails";
 import EditWorkflow from "./pages/EditWorkflow";
+import BusinessData from "./pages/BusinessData";
 
 
 function App() {
@@ -51,6 +52,11 @@ function App() {
     path="/integrations"
     element={<Integrations />}
 
+/>
+
+<Route
+    path="/business-data"
+    element={<BusinessData />}
 />
       </Routes>
     </BrowserRouter>
