@@ -4,7 +4,7 @@ const Customer = require("../Model/Customer");
 const Invoice = require("../Model/Invoice");
 const axios = require("axios");
 const productProvider = require("./productProvider");
-
+const orderService = require("./orderService");
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 const parseOrder = async (input) => {
@@ -47,6 +47,45 @@ const createCustomer = async (input) => {
         customerPhone: customer.phone
     };
 };
+
+
+const createOrder = async (input) => {
+
+    const {
+        customerId,
+        userId,
+        workflow,
+        items
+    } = input;
+
+    const order = await orderService.createOrder({
+
+        userId,
+
+        customerId,
+
+        workflowId: workflow?._id,
+
+        source: "whatsapp",
+
+        items
+
+    });
+
+    return {
+
+        orderId: order._id,
+
+        orderStatus: order.status,
+
+        approvalStatus: order.approvalStatus,
+
+        items
+
+    };
+
+};
+
 
 const updateInventory = async (input) => {
     const { items, userId, workflow } = input;
@@ -185,6 +224,7 @@ const notifyCustomer = async (input) => {
 const functionRegistry = {
     parseOrder,
     createCustomer,
+    createOrder,
     updateInventory,
     generateInvoice,
     notifyCustomer

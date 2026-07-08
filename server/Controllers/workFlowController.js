@@ -23,6 +23,7 @@ const createWorkFlow=async(req,res)=>{
         steps = [
             "parseOrder",
             "createCustomer",
+            "createOrder",
             "updateInventory",
             "generateInvoice",
             "notifyCustomer"
