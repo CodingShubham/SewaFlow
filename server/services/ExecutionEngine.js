@@ -64,6 +64,32 @@ const executeWorkflow = async (workflow, eventData) => {
                 ...output
             };
 
+
+            if (output?.shouldContinue === false) {
+
+    execution.logs.push({
+        step: stepName,
+        status: "stopped",
+        output
+    });
+
+    execution.status = "stopped";
+    execution.currentStep = null;
+    execution.finishedAt = new Date();
+
+    await execution.save();
+
+    console.log("Workflow stopped:", output.reason);
+
+    return {
+        success: false,
+        stopped: true,
+        reason: output.reason,
+        executionId: execution._id
+    };
+
+}
+
         } catch (error) {
 
             execution.logs.push({

@@ -6,6 +6,7 @@ const axios = require("axios");
 const productProvider = require("./productProvider");
 const orderService = require("./orderService");
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+const { decideOrderExecution } = require("./decisionEngine");
 
 const parseOrder = async (input) => {
     const text = input.rawMessage?.text || "";
@@ -27,6 +28,16 @@ const parseOrder = async (input) => {
         return { customerPhone: from, items: [], confidence: 0.1 };
     }
 };
+
+
+const validateOrder = async (input) => {
+
+    console.log("Running Decision Engine...");
+
+    return await decideOrderExecution(input);
+
+};
+
 
 const createCustomer = async (input) => {
     const { customerPhone, userId } = input;
@@ -223,6 +234,7 @@ const notifyCustomer = async (input) => {
 
 const functionRegistry = {
     parseOrder,
+    validateOrder,
     createCustomer,
     createOrder,
     updateInventory,
