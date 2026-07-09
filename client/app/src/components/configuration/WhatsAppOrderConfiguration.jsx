@@ -5,7 +5,22 @@ const WhatsAppOrderConfiguration = ({
     onChange
 }) => {
 
-const [config, setConfig] = useState(value);
+
+    const [config, setConfig] = useState({
+
+    approvalMode: "automatic",
+
+    outOfStockBehaviour: "notify",
+
+    inventoryUpdate: "on_confirmation",
+
+    invoiceGeneration: "on_confirmation",
+
+    customerNotification: true,
+
+    ...value
+
+});
 
     useEffect(() => {
 
@@ -16,136 +31,71 @@ const [config, setConfig] = useState(value);
     return (
 
         <div className="space-y-8">
-
-            <div className="bg-[#111827] border border-slate-800 rounded-2xl p-8">
-
-                <h2 className="text-2xl font-semibold text-white">
-
-                    Order Processing
-
-                </h2>
-
-                <p className="text-slate-400 mt-2">
-
-                    Decide how incoming WhatsApp orders should be processed.
-
-                </p>
-
-                <div className="mt-8 space-y-4">
-
-                    <label className="flex items-center gap-3 text-white">
-
-                        <input
-
-                            type="radio"
-
-                            name="approval"
-
-                            checked={config.approvalMode === "automatic"}
-
-                            onChange={() =>
-                                setConfig(prev => ({
-                                    ...prev,
-                                    approvalMode: "automatic"
-                                }))
-                            }
-
-                        />
-
-                        Automatic Approval
-
-                    </label>
-
-                    <label className="flex items-center gap-3 text-white">
-
-                        <input
-
-                            type="radio"
-
-                            name="approval"
-
-                            checked={config.approvalMode === "manual"}
-
-                            onChange={() =>
-                                setConfig(prev => ({
-                                    ...prev,
-                                    approvalMode: "manual"
-                                }))
-                            }
-
-                        />
-
-                        Manual Approval
-
-                    </label>
-
-                </div>
-
-            </div>
-
-            <div className="bg-[#111827] border border-slate-800 rounded-2xl p-8">
+<div className="bg-[#111827] border border-slate-800 rounded-2xl p-8">
 
     <h2 className="text-2xl font-semibold text-white">
-        Inventory Rules
+        Order Approval
     </h2>
 
     <p className="text-slate-400 mt-2">
-        Decide what should happen when ordered items are unavailable.
+        Choose whether orders should be approved automatically or wait for manual review.
     </p>
 
     <div className="mt-8 space-y-5">
 
-        <label className="flex items-center gap-3 text-white">
+        <label className="flex items-start gap-3 text-white">
 
             <input
                 type="radio"
-                name="stock"
-                checked={config.outOfStockBehaviour === "notify"}
+                name="approval"
+                checked={config.approvalMode === "automatic"}
                 onChange={() =>
                     setConfig(prev => ({
                         ...prev,
-                        outOfStockBehaviour: "notify"
+                        approvalMode: "automatic"
                     }))
                 }
             />
 
-            Notify Owner
+            <div>
+
+                <p className="font-medium">
+                    Automatic Approval
+                </p>
+
+                <p className="text-sm text-slate-400">
+                    Orders are confirmed immediately and the automation continues automatically.
+                </p>
+
+            </div>
 
         </label>
 
-        <label className="flex items-center gap-3 text-white">
+        <label className="flex items-start gap-3 text-white">
 
             <input
                 type="radio"
-                name="stock"
-                checked={config.outOfStockBehaviour === "reject"}
+                name="approval"
+                checked={config.approvalMode === "manual"}
                 onChange={() =>
                     setConfig(prev => ({
                         ...prev,
-                        outOfStockBehaviour: "reject"
+                        approvalMode: "manual"
                     }))
                 }
             />
 
-            Reject Order
+            <div>
 
-        </label>
+                <p className="font-medium">
+                    Manual Approval
+                </p>
 
-        <label className="flex items-center gap-3 text-white">
+                <p className="text-sm text-slate-400">
+                    Orders remain pending until you approve them from the Orders page.
+                </p>
 
-            <input
-                type="radio"
-                name="stock"
-                checked={config.outOfStockBehaviour === "accept"}
-                onChange={() =>
-                    setConfig(prev => ({
-                        ...prev,
-                        outOfStockBehaviour: "accept"
-                    }))
-                }
-            />
-
-            Continue Anyway
+            </div>
 
         </label>
 
@@ -157,25 +107,25 @@ const [config, setConfig] = useState(value);
 <div className="bg-[#111827] border border-slate-800 rounded-2xl p-8">
 
     <h2 className="text-2xl font-semibold text-white">
-        Invoice Settings
+        Inventory Update Policy
     </h2>
 
     <p className="text-slate-400 mt-2">
-        Choose when invoices should be generated for incoming orders.
+        Choose when inventory should be deducted for an order.
     </p>
 
     <div className="mt-8 space-y-5">
 
-        <label className="flex items-center gap-3 text-white">
+        <label className="flex items-start gap-3 text-white">
 
             <input
                 type="radio"
-                name="invoice"
-                checked={config.invoiceMode === "automatic"}
+                name="inventoryUpdate"
+                checked={config.inventoryUpdate === "on_confirmation"}
                 onChange={() =>
                     setConfig(prev => ({
                         ...prev,
-                        invoiceMode: "automatic"
+                        inventoryUpdate: "on_confirmation"
                     }))
                 }
             />
@@ -183,27 +133,27 @@ const [config, setConfig] = useState(value);
             <div>
 
                 <p className="font-medium">
-                    Generate Automatically
+                    Update on Order Confirmation
                 </p>
 
                 <p className="text-sm text-slate-400">
-                    Invoice is created immediately after processing the order.
+                    Deduct stock immediately after the order is confirmed.
                 </p>
 
             </div>
 
         </label>
 
-        <label className="flex items-center gap-3 text-white">
+        <label className="flex items-start gap-3 text-white">
 
             <input
                 type="radio"
-                name="invoice"
-                checked={config.invoiceMode === "manual"}
+                name="inventoryUpdate"
+                checked={config.inventoryUpdate === "on_completion"}
                 onChange={() =>
                     setConfig(prev => ({
                         ...prev,
-                        invoiceMode: "manual"
+                        inventoryUpdate: "on_completion"
                     }))
                 }
             />
@@ -211,11 +161,84 @@ const [config, setConfig] = useState(value);
             <div>
 
                 <p className="font-medium">
-                    Generate Manually
+                    Update on Order Completion
                 </p>
 
                 <p className="text-sm text-slate-400">
-                    Create invoices later after reviewing the order.
+                    Deduct stock only after the order has been completed.
+                </p>
+
+            </div>
+
+        </label>
+
+    </div>
+
+</div>
+
+
+<div className="bg-[#111827] border border-slate-800 rounded-2xl p-8">
+
+    <h2 className="text-2xl font-semibold text-white">
+        Invoice Generation
+    </h2>
+
+    <p className="text-slate-400 mt-2">
+        Choose when invoices should be generated during the order lifecycle.
+    </p>
+
+    <div className="mt-8 space-y-5">
+
+        <label className="flex items-start gap-3 text-white">
+
+            <input
+                type="radio"
+                name="invoiceGeneration"
+                checked={config.invoiceGeneration === "on_confirmation"}
+                onChange={() =>
+                    setConfig(prev => ({
+                        ...prev,
+                        invoiceGeneration: "on_confirmation"
+                    }))
+                }
+            />
+
+            <div>
+
+                <p className="font-medium">
+                    Generate on Order Confirmation
+                </p>
+
+                <p className="text-sm text-slate-400">
+                    Invoice is generated immediately after the order is confirmed.
+                </p>
+
+            </div>
+
+        </label>
+
+        <label className="flex items-start gap-3 text-white">
+
+            <input
+                type="radio"
+                name="invoiceGeneration"
+                checked={config.invoiceGeneration === "on_completion"}
+                onChange={() =>
+                    setConfig(prev => ({
+                        ...prev,
+                        invoiceGeneration: "on_completion"
+                    }))
+                }
+            />
+
+            <div>
+
+                <p className="font-medium">
+                    Generate on Order Completion
+                </p>
+
+                <p className="text-sm text-slate-400">
+                    Invoice is created only after the order is completed.
                 </p>
 
             </div>
@@ -247,11 +270,11 @@ const [config, setConfig] = useState(value);
             <input
                 type="checkbox"
                 className="peer sr-only"
-                checked={config.notificationsEnabled}
+                checked={config.customerNotification}
                 onChange={(e) =>
                     setConfig(prev => ({
                         ...prev,
-                        notificationsEnabled: e.target.checked
+                        customerNotification: e.target.checked
                     }))
                 }
             />
@@ -262,7 +285,7 @@ const [config, setConfig] = useState(value);
 
     </div>
 
-    {config.notificationsEnabled && (
+    {config.customerNotification && (
 
         <div className="mt-8 rounded-xl border border-slate-700 bg-slate-900 p-6">
 

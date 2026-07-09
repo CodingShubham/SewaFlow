@@ -1,7 +1,7 @@
 const Execution = require("../Model/Execution");
-const functionRegistry = require("./functionRegistry");
+const functionRegistry = require("./FunctionRegistry");
 
-const executeWorkflow = async (workflow, eventData) => {
+const executeWorkflow = async (workflow, eventData, startFromStep = null) => {
 
     const execution = await Execution.create({
         workflowId: workflow._id,
@@ -16,8 +16,51 @@ const executeWorkflow = async (workflow, eventData) => {
     ...eventData
 };
 
-    for (const stepName of workflow.steps) {
+    let stepsToExecute = workflow.steps;
 
+    if (startFromStep) {
+
+    const index = workflow.steps.indexOf(startFromStep);
+
+    if (index >= 0) {
+
+        stepsToExecute = workflow.steps.slice(index);
+
+    }
+
+}
+
+    for (const stepName of stepsToExecute) {
+
+// Read workflow automation policies
+const policy = workflow.config || {};
+
+// Skip inventory update
+if (
+    stepName === "updateInventory" &&
+    policy.inventoryUpdate !== "on_confirmation"
+) {
+    console.log("Skipping Inventory Update");
+    continue;
+}
+
+// Skip invoice generation
+if (
+    stepName === "generateInvoice" &&
+    policy.invoiceGeneration !== "on_confirmation"
+) {
+    console.log("Skipping Invoice Generation");
+    continue;
+}
+
+// Skip customer notification
+if (
+    stepName === "notifyCustomer" &&
+    policy.customerNotification === false
+) {
+    console.log("Skipping Customer Notification");
+    continue;
+}
         execution.currentStep = stepName;
         await execution.save();
 

@@ -14,16 +14,32 @@ const createOrder = async ({
         0
     );
 
+    const approvalMode = input.workflow.config?.approvalMode || "automatic";
+
     const order = await Order.create({
-        userId,
-        customerId,
-        workflowId,
-        source,
-        items,
-        totalAmount,
-        status: "pending",
-        approvalStatus: "pending",
-        notes
+
+    userId: input.userId,
+
+    customerId: customer._id,
+
+    workflowId: input.workflow._id,
+
+    source: "whatsapp",
+
+    items,
+
+    totalAmount,
+
+    status:
+        approvalMode === "automatic"
+            ? "confirmed"
+            : "pending",
+
+    approvalStatus:
+        approvalMode === "automatic"
+            ? "approved"
+            : "pending"
+
     });
 
     console.log("Order created:", order._id);

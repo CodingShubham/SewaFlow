@@ -7,6 +7,8 @@ const productProvider = require("./productProvider");
 const orderService = require("./orderService");
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const { decideOrderExecution } = require("./decisionEngine");
+const { validateBusinessRules } = require("./businessValidator");
+const { validateDuplicateOrder } = require("./duplicateOrderValidator");
 
 const parseOrder = async (input) => {
     const text = input.rawMessage?.text || "";
@@ -38,6 +40,21 @@ const validateOrder = async (input) => {
 
 };
 
+const validateBusiness = async (input) => {
+
+    console.log("Running Business Validation...");
+
+    return await validateBusinessRules(input);
+
+};
+
+const validateDuplicate = async (input) => {
+
+    console.log("Checking Duplicate Order...");
+
+    return await validateDuplicateOrder(input);
+
+};
 
 const createCustomer = async (input) => {
     const { customerPhone, userId } = input;
@@ -99,14 +116,17 @@ const createOrder = async (input) => {
 
 
 const updateInventory = async (input) => {
-    const { items, userId, workflow } = input;
-
+     const userId = input.userId;
+    const workflow = input.workflow;
+     const items = input.order
+    ? input.order.items
+    : input.items;
     const updatedItems = [];
     const outOfStockBehaviour =
         workflow?.config?.outOfStockBehaviour || "notify";
 
     for (const item of items) {
-
+   
     const product = await productProvider.getProductByName(
     userId,
     item.name
@@ -149,44 +169,96 @@ const updateInventory = async (input) => {
         }
     }
 
-    return {
-        updated: true,
-        items: updatedItems
-    };
+ return {
+
+    updated: true,
+
+    inventoryUpdated: true,
+
+    items: updatedItems,
+
+    order: input.order
+
 };
+};
+
+
 
 const generateInvoice = async (input) => {
-    const { customerId, userId, items, workflow } = input;
 
-    const invoiceMode = workflow?.config?.invoiceMode || "automatic";
+    const { workflow, userId } = input;
 
-    if (invoiceMode === "manual") {
-        console.log("Invoice mode is manual — skipping auto generation");
+
+    if (!input.inventoryUpdated) {
+
+    throw new Error(
+        "Cannot generate invoice before inventory update."
+    );
+
+}
+
+    // Resume execution support
+    const customerId = input.order
+        ? input.order.customerId
+        : input.customerId;
+
+    const items = input.order
+        ? input.order.items
+        : input.items;
+
+    const totalAmount = input.order
+        ? input.order.totalAmount
+        : items.reduce((sum, item) => sum + (item.total || 0), 0);
+
+    const invoiceGeneration =
+        workflow?.config?.invoiceGeneration || "on_confirmation";
+
+    if (invoiceGeneration === "manual") {
+
+        console.log("Invoice generation is manual - skipping automatic invoice.");
+
         return {
             invoiceId: null,
-            amount: 0,
+            amount: totalAmount,
             items,
-            pendingApproval: true
+            pendingApproval: true,
+            order: input.order
         };
+
     }
 
-    const totalAmount = items.reduce((sum, item) => sum + (item.total || 0), 0);
-
     const invoice = await Invoice.create({
+
         userId,
+
         customerId,
+
         items,
+
         totalAmount
+
     });
 
-    console.log("Invoice created:", invoice._id, "Total:", totalAmount);
+    console.log("Invoice created:", invoice._id);
 
     return {
+
+        invoiceCreated: true,
+
         invoiceId: invoice._id,
+
         amount: totalAmount,
-        items
+
+        items,
+
+        order: input.order
+
     };
+
 };
+
+module.exports = generateInvoice;
+
 
 const notifyCustomer = async (input) => {
     const { customerPhone, invoiceId, amount, items, integration, workflow } = input;
@@ -197,6 +269,14 @@ const notifyCustomer = async (input) => {
         console.log("Notifications disabled — skipping WhatsApp confirmation");
         return { sent: false, message: null };
     }
+
+    if (!input.invoiceCreated) {
+
+    throw new Error(
+        "Cannot notify customer before invoice generation."
+    );
+
+}
 
     const accessToken = integration?.accessToken || process.env.WHATSAPP_ACCESS_TOKEN;
     const phoneNumberId = integration?.phoneNumberId || process.env.WHATSAPP_PHONE_NUMBER_ID;
@@ -232,14 +312,25 @@ const notifyCustomer = async (input) => {
     }
 };
 
-const functionRegistry = {
+module.exports = {
+
     parseOrder,
+
     validateOrder,
+
+    validateBusiness,
+
+    validateDuplicate,
+
     createCustomer,
+
     createOrder,
+
     updateInventory,
+
     generateInvoice,
+
     notifyCustomer
+
 };
 
-module.exports = functionRegistry;

@@ -20,15 +20,27 @@ const createWorkFlow=async(req,res)=>{
 
         trigger = "whatsapp_message";
 
-        steps = [
-            "parseOrder",
-            "validateOrder",
-            "createCustomer",
-            "createOrder",
-            "updateInventory",
-            "generateInvoice",
-            "notifyCustomer"
-        ];
+     steps = [
+
+    "parseOrder",
+
+    "validateOrder",
+
+    "validateBusiness",
+
+    "createCustomer",
+
+    "validateDuplicate",
+
+    "createOrder",
+
+    "updateInventory",
+
+    "generateInvoice",
+
+    "notifyCustomer"
+
+];
 
         break;
 
@@ -46,6 +58,16 @@ const createWorkFlow=async(req,res)=>{
         // return res.status(400).json({messsage:"Workflow already exists"})
         // }
 
+
+                const workflowConfig = {
+                approvalMode: "automatic",
+                inventoryUpdate: "on_confirmation",
+                invoiceGeneration: "on_confirmation",
+                customerNotification: true,
+
+                ...(config || {})
+            };
+
               const newWorkflow = await WorkFlow.create({
               userId: req.user._id,
               businessConfigId,
@@ -53,7 +75,7 @@ const createWorkFlow=async(req,res)=>{
               trigger,
               steps,
               template,
-              config
+              config:workflowConfig
           });
 
         res.status(201).json(newWorkflow );
