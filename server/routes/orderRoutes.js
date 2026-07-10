@@ -2,11 +2,13 @@ const express = require("express");
 
 const router = express.Router();
 
-const authMiddleware = require("../Middleware/authMiddleware");
+const authMiddleware = require("../Middlewares/authMiddleware");
 
 const {
 
     getOrders,
+
+    getOrderStats,
 
     getOrderById,
   
@@ -14,7 +16,7 @@ const {
 
     rejectOrder
 
-} = require("../Controller/orderController");
+} = require("../Controllers/orderController");
 
 router.get(
 
@@ -26,6 +28,18 @@ router.get(
 
 );
 
+
+router.get(
+
+    "/stats",
+
+    authMiddleware,
+
+    getOrderStats
+
+);
+
+
 router.get(
 
     "/:id",
@@ -36,7 +50,7 @@ router.get(
 
 );
 
-router.patch(
+router.put(
 
     "/:id/approve",
 
@@ -46,7 +60,7 @@ router.patch(
 
 );
 
-router.patch(
+router.put(
 
     "/:id/reject",
 
@@ -55,5 +69,7 @@ router.patch(
     rejectOrder
 
 );
+
+
 
 module.exports = router;

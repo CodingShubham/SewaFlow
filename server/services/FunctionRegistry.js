@@ -88,17 +88,19 @@ const createOrder = async (input) => {
 
     const order = await orderService.createOrder({
 
-        userId,
+    userId,
 
-        customerId,
+    customerId,
 
-        workflowId: workflow?._id,
+    workflowId: workflow?._id,
 
-        source: "whatsapp",
+    workflow,
 
-        items
+    source: "whatsapp",
 
-    });
+    items
+
+});
 
     return {
 
@@ -210,22 +212,22 @@ const generateInvoice = async (input) => {
         ? input.order.totalAmount
         : items.reduce((sum, item) => sum + (item.total || 0), 0);
 
-    const invoiceGeneration =
-        workflow?.config?.invoiceGeneration || "on_confirmation";
 
-    if (invoiceGeneration === "manual") {
+    const invoiceMode = workflow?.config?.invoiceMode || "automatic";
 
-        console.log("Invoice generation is manual - skipping automatic invoice.");
+    if (invoiceMode !== "automatic") {
 
-        return {
-            invoiceId: null,
-            amount: totalAmount,
-            items,
-            pendingApproval: true,
-            order: input.order
-        };
+    console.log("Invoice generation disabled.");
 
-    }
+    return {
+        invoiceCreated: false,
+        invoiceId: null,
+        amount: totalAmount,
+        items,
+        order: input.order
+    };
+
+}
 
     const invoice = await Invoice.create({
 
@@ -257,7 +259,7 @@ const generateInvoice = async (input) => {
 
 };
 
-module.exports = generateInvoice;
+
 
 
 const notifyCustomer = async (input) => {
@@ -270,11 +272,13 @@ const notifyCustomer = async (input) => {
         return { sent: false, message: null };
     }
 
-    if (!input.invoiceCreated) {
+if (!input.invoiceCreated) {
 
-    throw new Error(
-        "Cannot notify customer before invoice generation."
-    );
+    console.log("Skipping customer notification because invoice was not generated.");
+
+    return {
+        sent: false
+    };
 
 }
 

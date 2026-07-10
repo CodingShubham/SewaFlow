@@ -2,7 +2,7 @@ const Order = require("../Model/Order");
 
 const validateDuplicateOrder = async (input) => {
 
-    const customerId = input.customer?._id;
+   const customerId = input.customerId;
 
     if (!customerId) {
         return {

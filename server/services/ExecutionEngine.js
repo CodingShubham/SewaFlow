@@ -11,62 +11,88 @@ const executeWorkflow = async (workflow, eventData, startFromStep = null) => {
     });
 
     let currentInput = {
-    workflow,
-    userId: workflow.userId,
-    ...eventData
-};
+        workflow,
+        userId: workflow.userId,
+        ...eventData
+    };
 
     let stepsToExecute = workflow.steps;
 
     if (startFromStep) {
 
-    const index = workflow.steps.indexOf(startFromStep);
+        const index = workflow.steps.indexOf(startFromStep);
 
-    if (index >= 0) {
-
-        stepsToExecute = workflow.steps.slice(index);
+        if (index >= 0) {
+            stepsToExecute = workflow.steps.slice(index);
+        }
 
     }
 
-}
+    console.log("==================================");
+    console.log("Workflow:", workflow.name);
+    console.log("Workflow Steps:", workflow.steps);
+    console.log("Executing Steps:", stepsToExecute);
+    console.log("==================================");
 
     for (const stepName of stepsToExecute) {
 
-// Read workflow automation policies
-const policy = workflow.config || {};
+        console.log(`\nRunning Step -> ${stepName}`);
 
-// Skip inventory update
+
+        const policy = workflow.config || {};
+
+/*
+|--------------------------------------------------------------------------
+| Inventory
+|--------------------------------------------------------------------------
+*/
+
 if (
     stepName === "updateInventory" &&
-    policy.inventoryUpdate !== "on_confirmation"
+    policy.outOfStockBehaviour === "none"
 ) {
     console.log("Skipping Inventory Update");
     continue;
 }
 
-// Skip invoice generation
+/*
+|--------------------------------------------------------------------------
+| Invoice
+|--------------------------------------------------------------------------
+*/
+
 if (
     stepName === "generateInvoice" &&
-    policy.invoiceGeneration !== "on_confirmation"
+    policy.invoiceMode !== "automatic"
 ) {
     console.log("Skipping Invoice Generation");
     continue;
 }
 
-// Skip customer notification
+/*
+|--------------------------------------------------------------------------
+| Customer Notification
+|--------------------------------------------------------------------------
+*/
+
 if (
     stepName === "notifyCustomer" &&
-    policy.customerNotification === false
+    policy.notificationsEnabled === false
 ) {
     console.log("Skipping Customer Notification");
     continue;
 }
+
+
         execution.currentStep = stepName;
         await execution.save();
 
         const stepFunction = functionRegistry[stepName];
 
         if (!stepFunction) {
+
+            console.log("Function not found:", stepName);
+
             execution.logs.push({
                 step: stepName,
                 status: "failed",
@@ -82,13 +108,18 @@ if (
                 success: false,
                 executionId: execution._id
             };
+
         }
 
         try {
 
+            console.log("Input:", currentInput);
+
             const startTime = Date.now();
 
             const output = await stepFunction(currentInput);
+
+            console.log("Output:", output);
 
             const durationMs = Date.now() - startTime;
 
@@ -107,33 +138,65 @@ if (
                 ...output
             };
 
+            if (
+    stepName === "createOrder" &&
+    workflow.config?.approvalMode === "manual"
+) {
 
-            if (output?.shouldContinue === false) {
+    console.log("Manual approval workflow.");
+    console.log("Waiting for business approval...");
 
-    execution.logs.push({
-        step: stepName,
-        status: "stopped",
-        output
-    });
+    execution.status = "waiting";
 
-    execution.status = "stopped";
     execution.currentStep = null;
+
     execution.finishedAt = new Date();
 
     await execution.save();
 
-    console.log("Workflow stopped:", output.reason);
-
     return {
-        success: false,
-        stopped: true,
-        reason: output.reason,
+
+        success: true,
+
+        waitingApproval: true,
+
+        orderId: currentInput.orderId,
+
         executionId: execution._id
+
     };
 
 }
 
+            if (output?.shouldContinue === false) {
+
+                console.log("Workflow stopped:", output.reason);
+
+                execution.logs.push({
+                    step: stepName,
+                    status: "stopped",
+                    output
+                });
+
+                execution.status = "stopped";
+                execution.currentStep = null;
+                execution.finishedAt = new Date();
+
+                await execution.save();
+
+                return {
+                    success: false,
+                    stopped: true,
+                    reason: output.reason,
+                    executionId: execution._id
+                };
+
+            }
+
         } catch (error) {
+
+            console.log("Step Failed:", stepName);
+            console.log(error);
 
             execution.logs.push({
                 step: stepName,
@@ -150,7 +213,9 @@ if (
                 success: false,
                 executionId: execution._id
             };
+
         }
+
     }
 
     execution.status = "success";
@@ -159,10 +224,13 @@ if (
 
     await execution.save();
 
+    console.log("Workflow Completed Successfully");
+
     return {
         success: true,
         executionId: execution._id
     };
+
 };
 
 module.exports = executeWorkflow;

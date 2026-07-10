@@ -13,6 +13,8 @@ import Workflow from "./pages/Workflow";
 import WorkflowDetails from "./pages/WorkflowDetails";
 import EditWorkflow from "./pages/EditWorkflow";
 import BusinessData from "./pages/BusinessData";
+import Orders from "./pages/Orders";
+import OrderDetails from './pages/OrderDetails';
 
 
 function App() {
@@ -58,6 +60,20 @@ function App() {
     path="/business-data"
     element={<BusinessData />}
 />
+
+<Route
+    path="/orders"
+    element={<Orders />}
+/>
+
+<Route
+
+    path="/orders/:id"
+
+    element={<OrderDetails />}
+
+/>
+
       </Routes>
     </BrowserRouter>
   );
