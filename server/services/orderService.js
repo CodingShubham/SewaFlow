@@ -18,8 +18,16 @@ const createOrder = async ({
     const approvalMode =
         workflow?.config?.approvalMode || "automatic";
 
+    const orderNumber =
+    "ORD-" +
+    Date.now() +
+    "-" +
+    Math.floor(Math.random() * 1000);
+
     const order = await Order.create({
 
+        orderNumber,
+        
         userId,
 
         customerId,

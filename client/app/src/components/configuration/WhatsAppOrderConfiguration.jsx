@@ -28,6 +28,23 @@ const WhatsAppOrderConfiguration = ({
 
     }, [config]);
 
+
+    useEffect(() => {
+
+    if (config.approvalMode === "automatic") {
+
+        setConfig(prev => ({
+            ...prev,
+            inventoryUpdate: "on_confirmation",
+            invoiceGeneration: "on_confirmation"
+        }));
+
+    }
+
+}, [config.approvalMode]);
+
+    const isAutomatic = config.approvalMode === "automatic";
+
     return (
 
         <div className="space-y-8">
@@ -114,65 +131,83 @@ const WhatsAppOrderConfiguration = ({
         Choose when inventory should be deducted for an order.
     </p>
 
-    <div className="mt-8 space-y-5">
+    {isAutomatic ? (
 
-        <label className="flex items-start gap-3 text-white">
+        <div className="mt-8 rounded-xl border border-green-700 bg-green-900/20 p-6">
 
-            <input
-                type="radio"
-                name="inventoryUpdate"
-                checked={config.inventoryUpdate === "on_confirmation"}
-                onChange={() =>
-                    setConfig(prev => ({
-                        ...prev,
-                        inventoryUpdate: "on_confirmation"
-                    }))
-                }
-            />
+            <p className="text-green-400 font-semibold">
+                Automatic Inventory Update
+            </p>
 
-            <div>
+            <p className="text-slate-300 mt-2">
+                Since orders are approved automatically, inventory will be updated immediately after approval.
+            </p>
 
-                <p className="font-medium">
-                    Update on Order Confirmation
-                </p>
+        </div>
 
-                <p className="text-sm text-slate-400">
-                    Deduct stock immediately after the order is confirmed.
-                </p>
+    ) : (
 
-            </div>
+        <div className="mt-8 space-y-5">
 
-        </label>
+            <label className="flex items-start gap-3 text-white">
 
-        <label className="flex items-start gap-3 text-white">
+                <input
+                    type="radio"
+                    name="inventoryUpdate"
+                    checked={config.inventoryUpdate === "on_confirmation"}
+                    onChange={() =>
+                        setConfig(prev => ({
+                            ...prev,
+                            inventoryUpdate: "on_confirmation"
+                        }))
+                    }
+                />
 
-            <input
-                type="radio"
-                name="inventoryUpdate"
-                checked={config.inventoryUpdate === "on_completion"}
-                onChange={() =>
-                    setConfig(prev => ({
-                        ...prev,
-                        inventoryUpdate: "on_completion"
-                    }))
-                }
-            />
+                <div>
 
-            <div>
+                    <p className="font-medium">
+                        Update after Approval
+                    </p>
 
-                <p className="font-medium">
-                    Update on Order Completion
-                </p>
+                    <p className="text-sm text-slate-400">
+                        Deduct stock immediately after you approve the order.
+                    </p>
 
-                <p className="text-sm text-slate-400">
-                    Deduct stock only after the order has been completed.
-                </p>
+                </div>
 
-            </div>
+            </label>
 
-        </label>
+            <label className="flex items-start gap-3 text-white">
 
-    </div>
+                <input
+                    type="radio"
+                    name="inventoryUpdate"
+                    checked={config.inventoryUpdate === "on_completion"}
+                    onChange={() =>
+                        setConfig(prev => ({
+                            ...prev,
+                            inventoryUpdate: "on_completion"
+                        }))
+                    }
+                />
+
+                <div>
+
+                    <p className="font-medium">
+                        Update on Order Completion
+                    </p>
+
+                    <p className="text-sm text-slate-400">
+                        Deduct stock only after the order has been completed.
+                    </p>
+
+                </div>
+
+            </label>
+
+        </div>
+
+    )}
 
 </div>
 
@@ -184,68 +219,86 @@ const WhatsAppOrderConfiguration = ({
     </h2>
 
     <p className="text-slate-400 mt-2">
-        Choose when invoices should be generated during the order lifecycle.
+        Choose when invoices should be generated.
     </p>
 
-    <div className="mt-8 space-y-5">
+    {isAutomatic ? (
 
-        <label className="flex items-start gap-3 text-white">
+        <div className="mt-8 rounded-xl border border-green-700 bg-green-900/20 p-6">
 
-            <input
-                type="radio"
-                name="invoiceGeneration"
-                checked={config.invoiceGeneration === "on_confirmation"}
-                onChange={() =>
-                    setConfig(prev => ({
-                        ...prev,
-                        invoiceGeneration: "on_confirmation"
-                    }))
-                }
-            />
+            <p className="text-green-400 font-semibold">
+                Automatic Invoice Generation
+            </p>
 
-            <div>
+            <p className="text-slate-300 mt-2">
+                Since orders are approved automatically, invoices will be generated immediately after approval.
+            </p>
 
-                <p className="font-medium">
-                    Generate on Order Confirmation
-                </p>
+        </div>
 
-                <p className="text-sm text-slate-400">
-                    Invoice is generated immediately after the order is confirmed.
-                </p>
+    ) : (
 
-            </div>
+        <div className="mt-8 space-y-5">
 
-        </label>
+            <label className="flex items-start gap-3 text-white">
 
-        <label className="flex items-start gap-3 text-white">
+                <input
+                    type="radio"
+                    name="invoiceGeneration"
+                    checked={config.invoiceGeneration === "on_confirmation"}
+                    onChange={() =>
+                        setConfig(prev => ({
+                            ...prev,
+                            invoiceGeneration: "on_confirmation"
+                        }))
+                    }
+                />
 
-            <input
-                type="radio"
-                name="invoiceGeneration"
-                checked={config.invoiceGeneration === "on_completion"}
-                onChange={() =>
-                    setConfig(prev => ({
-                        ...prev,
-                        invoiceGeneration: "on_completion"
-                    }))
-                }
-            />
+                <div>
 
-            <div>
+                    <p className="font-medium">
+                        Generate after Approval
+                    </p>
 
-                <p className="font-medium">
-                    Generate on Order Completion
-                </p>
+                    <p className="text-sm text-slate-400">
+                        Invoice is generated immediately after approval.
+                    </p>
 
-                <p className="text-sm text-slate-400">
-                    Invoice is created only after the order is completed.
-                </p>
+                </div>
 
-            </div>
+            </label>
 
-        </label>
+            <label className="flex items-start gap-3 text-white">
 
-    </div>
+                <input
+                    type="radio"
+                    name="invoiceGeneration"
+                    checked={config.invoiceGeneration === "on_completion"}
+                    onChange={() =>
+                        setConfig(prev => ({
+                            ...prev,
+                            invoiceGeneration: "on_completion"
+                        }))
+                    }
+                />
+
+                <div>
+
+                    <p className="font-medium">
+                        Generate on Order Completion
+                    </p>
+
+                    <p className="text-sm text-slate-400">
+                        Invoice is generated only after the order is completed.
+                    </p>
+
+                </div>
+
+            </label>
+
+        </div>
+
+    )}
 
 </div>
 
