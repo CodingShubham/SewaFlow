@@ -9,6 +9,8 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const { decideOrderExecution } = require("./decisionEngine");
 const { validateBusinessRules } = require("./businessValidator");
 const { validateDuplicateOrder } = require("./duplicateOrderValidator");
+const Order = require("../Model/Order");
+const { buildOrderMessage } = require("./messageBuilder");
 
 const parseOrder = async (input) => {
     const text = input.rawMessage?.text || "";
@@ -118,25 +120,30 @@ const createOrder = async (input) => {
 
 
 const updateInventory = async (input) => {
-     const userId = input.userId;
+
+    const userId = input.userId;
     const workflow = input.workflow;
-     const items = input.order
-    ? input.order.items
-    : input.items;
+
+    const items = input.order
+        ? input.order.items
+        : input.items;
+
     const updatedItems = [];
+
     const outOfStockBehaviour =
         workflow?.config?.outOfStockBehaviour || "notify";
 
     for (const item of items) {
-   
-    const product = await productProvider.getProductByName(
-    userId,
-    item.name
-);
+
+        const product = await productProvider.getProductByName(
+            userId,
+            item.name
+        );
 
         if (product) {
 
             product.stock -= item.qty;
+
             await product.save();
 
             updatedItems.push({
@@ -149,13 +156,13 @@ const updateInventory = async (input) => {
             });
 
             console.log(
-                `Updated product ${product.name}: ${product.stock} remaining`
+                `Updated ${product.name} stock : ${product.stock}`
             );
 
         } else {
 
             console.log(
-                `Product not found: ${item.name} — behaviour: ${outOfStockBehaviour}`
+                `Product not found : ${item.name}`
             );
 
             updatedItems.push({
@@ -169,19 +176,37 @@ const updateInventory = async (input) => {
             });
 
         }
+
     }
 
- return {
+    //--------------------------------------------------
+    // Update Order
+    //--------------------------------------------------
 
-    updated: true,
+    const order = await Order.findById(input.order._id);
 
-    inventoryUpdated: true,
+    order.inventoryReserved = true;
 
-    items: updatedItems,
+    order.timeline.push({
+        status: "inventory_updated"
+    });
 
-    order: input.order
+    await order.save();
 
-};
+    //--------------------------------------------------
+
+    return {
+
+        updated: true,
+
+        inventoryUpdated: true,
+
+        items: updatedItems,
+
+        order
+
+    };
+
 };
 
 
@@ -190,44 +215,46 @@ const generateInvoice = async (input) => {
 
     const { workflow, userId } = input;
 
-
     if (!input.inventoryUpdated) {
 
-    throw new Error(
-        "Cannot generate invoice before inventory update."
-    );
+        throw new Error(
+            "Cannot generate invoice before inventory update."
+        );
 
-}
+    }
 
-    // Resume execution support
-    const customerId = input.order
-        ? input.order.customerId
-        : input.customerId;
+    const customerId = input.order.customerId;
 
-    const items = input.order
-        ? input.order.items
-        : input.items;
+    const items = input.order.items;
 
-    const totalAmount = input.order
-        ? input.order.totalAmount
-        : items.reduce((sum, item) => sum + (item.total || 0), 0);
+    const totalAmount = input.order.totalAmount;
 
-
-    const invoiceMode = workflow?.config?.invoiceMode || "automatic";
+    const invoiceMode =
+        workflow?.config?.invoiceMode || "automatic";
 
     if (invoiceMode !== "automatic") {
 
-    console.log("Invoice generation disabled.");
+        console.log("Invoice generation skipped.");
 
-    return {
-        invoiceCreated: false,
-        invoiceId: null,
-        amount: totalAmount,
-        items,
-        order: input.order
-    };
+        return {
 
-}
+            invoiceCreated: false,
+
+            invoiceId: null,
+
+            amount: totalAmount,
+
+            items,
+
+            order: input.order
+
+        };
+
+    }
+
+    //------------------------------------------------------
+    // Create Invoice
+    //------------------------------------------------------
 
     const invoice = await Invoice.create({
 
@@ -241,6 +268,24 @@ const generateInvoice = async (input) => {
 
     });
 
+    //------------------------------------------------------
+    // Update Order
+    //------------------------------------------------------
+
+    const order = await Order.findById(input.order._id);
+
+    order.invoiceGenerated = true;
+
+    order.timeline.push({
+
+        status: "invoice_generated"
+
+    });
+
+    await order.save();
+
+    //------------------------------------------------------
+
     console.log("Invoice created:", invoice._id);
 
     return {
@@ -253,68 +298,127 @@ const generateInvoice = async (input) => {
 
         items,
 
-        order: input.order
+        order
 
     };
 
 };
-
 
 
 
 const notifyCustomer = async (input) => {
-    const { customerPhone, invoiceId, amount, items, integration, workflow } = input;
 
-    const notificationsEnabled = workflow?.config?.notificationsEnabled !== false;
+    const {
+        customerPhone,
+        integration,
+        workflow,
+        order,
+        invoiceId
+    } = input;
+
+    const notificationsEnabled =
+        workflow?.config?.notificationsEnabled !== false;
 
     if (!notificationsEnabled) {
-        console.log("Notifications disabled — skipping WhatsApp confirmation");
-        return { sent: false, message: null };
+
+        console.log("Notifications disabled.");
+
+        return {
+            sent: false
+        };
+
     }
 
-if (!input.invoiceCreated) {
+    const accessToken =
+        integration?.accessToken ||
+        process.env.WHATSAPP_ACCESS_TOKEN;
 
-    console.log("Skipping customer notification because invoice was not generated.");
+    const phoneNumberId =
+        integration?.phoneNumberId ||
+        process.env.WHATSAPP_PHONE_NUMBER_ID;
 
-    return {
-        sent: false
-    };
+    //--------------------------------------------------
+    // Build message
+    //--------------------------------------------------
 
-}
+    const message = buildOrderMessage({
 
-    const accessToken = integration?.accessToken || process.env.WHATSAPP_ACCESS_TOKEN;
-    const phoneNumberId = integration?.phoneNumberId || process.env.WHATSAPP_PHONE_NUMBER_ID;
+        type: "confirmed",
 
-    const itemList = items
-        .map(item => `${item.name} x${item.qty} ${item.unit}`)
-        .join(', ');
+        order,
 
-    const message = `Hello! Your order has been confirmed.\n\nItems: ${itemList}\nTotal: ₹${amount}\nInvoice ID: ${invoiceId}\n\nThank you for your order!`;
+        invoiceId
+
+    });
+
+    //--------------------------------------------------
 
     try {
-        await axios.post(
-            `https://graph.facebook.com/v18.0/${phoneNumberId}/messages`,
-            {
-                messaging_product: "whatsapp",
-                to: customerPhone,
-                type: "text",
-                text: { body: message }
-            },
-            {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`,
-                    "Content-Type": "application/json"
-                }
-            }
-        );
-        console.log("WhatsApp confirmation sent to:", customerPhone);
-        return { sent: true, message };
 
-    } catch (error) {
-        console.error("notifyCustomer error:", error.message);
-        return { sent: false, message: null };
+        await axios.post(
+
+            `https://graph.facebook.com/v18.0/${phoneNumberId}/messages`,
+
+            {
+
+                messaging_product: "whatsapp",
+
+                to: customerPhone,
+
+                type: "text",
+
+                text: {
+
+                    body: message
+
+                }
+
+            },
+
+            {
+
+                headers: {
+
+                    Authorization: `Bearer ${accessToken}`,
+
+                    "Content-Type": "application/json"
+
+                }
+
+            }
+
+        );
+
+        console.log("WhatsApp notification sent.");
+
+        return {
+
+            sent: true,
+
+            message,
+
+            order
+
+        };
+
     }
+
+    catch (error) {
+
+        console.error(error.message);
+
+        return {
+
+            sent: false,
+
+            order
+
+        };
+
+    }
+
 };
+
 
 module.exports = {
 

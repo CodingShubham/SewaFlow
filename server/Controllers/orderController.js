@@ -3,7 +3,7 @@ const Workflow = require("../Model/WorkFlow");
 const executeWorkflow = require("../services/executionEngine");
 const Customer = require("../Model/Customer");
 const Integration = require("../Model/Integrations");
-
+const orderStateService = require("../services/orderStateService");
 
 const getOrders = async (req, res) => {
 
@@ -130,10 +130,11 @@ const rejectOrder = async (req, res) => {
 
         }
 
-        order.approvalStatus = "rejected";
-        order.status = "cancelled";
-
-        await order.save();
+       await orderStateService.rejectOrder(
+    order,
+    "owner",
+    "Rejected by business owner"
+);
 
         res.status(200).json({
 
@@ -247,6 +248,12 @@ const rejectOrder = async (req, res) => {
 
         };
 
+
+            await orderStateService.confirmOrder(
+            order,
+            "owner"
+        );
+
         const result = await executeWorkflow(
 
             workflow,
@@ -271,11 +278,7 @@ const rejectOrder = async (req, res) => {
 
         }
 
-        order.status = "confirmed";
 
-        order.approvalStatus = "approved";
-
-        await order.save();
 
         res.status(200).json({
 

@@ -15,8 +15,7 @@ const createOrder = async ({
         0
     );
 
-    const approvalMode =
-        workflow?.config?.approvalMode || "automatic";
+  
 
     const orderNumber =
     "ORD-" +
@@ -42,15 +41,18 @@ const createOrder = async ({
 
         notes,
 
-        status:
-            approvalMode === "automatic"
-                ? "confirmed"
-                : "pending",
+       status: "pending",
 
-        approvalStatus:
-            approvalMode === "automatic"
-                ? "approved"
-                : "pending"
+        approvalStatus: "pending",
+
+        timeline: [
+            {
+                status: "pending",
+                by: "system",
+                note: "Order created"
+            }
+        ]
+
 
     });
 

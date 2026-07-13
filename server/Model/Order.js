@@ -114,6 +114,8 @@ const orderSchema = new mongoose.Schema(
         default: "pending"
     },
 
+    
+
     // NEW
     inventoryReserved: {
         type: Boolean,

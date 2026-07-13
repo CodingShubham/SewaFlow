@@ -121,7 +121,7 @@ User
  │       └── ...
  │
  ├── Automations
- │       ├── WhatsApp Order Automation
+ │       ├── WhatsApp Order Automation    
  │       ├── Inventory Alert Automation
  │       └── Invoice Automation
  │
@@ -142,3 +142,9 @@ User
                 │
                 ▼
              Executions
+
+
+
+✅ Keep type: [String] for now.
+
+It's simple, matches your current engine, and is easy to extend later. Only switch to an object-based steps array when you actually introduce features like conditions, delays, retries, branching, or per-step configuration. Right now, changing it would add complexity without providing any benefit.

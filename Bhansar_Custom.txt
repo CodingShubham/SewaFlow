@@ -1,0 +1,60 @@
+CURRENT
+
+
+
+Truck arrives at customs
+          │
+          ▼
+Agent collects documents
+(Invoice, Packing List, COO, etc.)
+          │
+          ▼
+Open Customs Software
+          │
+          ├── Option 1
+          │   Manually fill every field
+          │
+          └── Option 2
+              Download Excel template
+              ↓
+              Manually type all information
+              ↓
+              Upload Excel
+              ↓
+              Software fills the declaration automatically
+
+
+
+
+
+
+
+
+NEW 
+
+
+Truck arrives
+      │
+      ▼
+Upload PDFs
+      │
+      ▼
+Your Platform
+      │
+      ├── Read Invoice
+      ├── Read Packing List
+      ├── Read COO
+      ├── Validate data
+      ├── Fill official Excel template
+      │
+      ▼
+Download Ready-to-Upload Excel
+      │
+      ▼
+Import into Customs Software
+      │
+      ▼
+Declaration automatically populated
+      │
+      ▼
+Submit

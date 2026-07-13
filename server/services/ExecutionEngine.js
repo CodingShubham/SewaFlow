@@ -1,5 +1,7 @@
 const Execution = require("../Model/Execution");
 const functionRegistry = require("./FunctionRegistry");
+const orderStateService = require("./orderStateService");
+const Order = require("../Model/Order");
 
 const executeWorkflow = async (workflow, eventData, startFromStep = null) => {
 
@@ -119,6 +121,17 @@ if (
 
             const output = await stepFunction(currentInput);
 
+                if (
+                stepName === "createOrder" &&
+                workflow.config?.approvalMode === "automatic"
+            ) {
+                 const order = await Order.findById(output.orderId);
+                await orderStateService.confirmOrder(
+                    order,
+                    "system"
+                );
+            }
+
             console.log("Output:", output);
 
             const durationMs = Date.now() - startTime;
@@ -138,7 +151,7 @@ if (
                 ...output
             };
 
-            if (
+    if (
     stepName === "createOrder" &&
     workflow.config?.approvalMode === "manual"
 ) {
