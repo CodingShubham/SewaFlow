@@ -1,54 +1,53 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import API from "../api/axios";
 import StatusBadge from "../components/orders/StatusBadge";
 import ApprovalButtons from "../components/orders/ApprovalButtons";
-import { Link } from "react-router-dom";
 import StatCard from "../components/orders/StatCard";
 
 const Orders = () => {
 
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
-    const pendingOrders = orders.filter(
-    (order) => order.approvalStatus === "pending"
-);
+
     const [stats, setStats] = useState({
 
-    totalOrders: 0,
+        totalOrders: 0,
+        pendingOrders: 0,
+        approvedOrders: 0,
+        rejectedOrders: 0,
+        revenue: 0
 
-    pendingOrders: 0,
+    });
 
-    approvedOrders: 0,
+    const pendingOrders = orders.filter(
+        (order) => order.approvalStatus === "pending"
+    );
 
-    rejectedOrders: 0,
+    useEffect(() => {
 
-    revenue: 0
+        fetchOrders();
+        fetchStats();
 
-});
-
-            useEffect(() => {
-
-            fetchOrders();
-
-            fetchStats();
-
-        }, []);
+    }, []);
 
     const fetchOrders = async () => {
 
         try {
 
-            const token = localStorage.getItem("token");
-
-         const response = await API.get("/orders");
+            const response = await API.get("/orders");
 
             setOrders(response.data);
 
-        } catch (error) {
+        }
+
+        catch (error) {
 
             console.error(error);
 
-        } finally {
+        }
+
+        finally {
 
             setLoading(false);
 
@@ -56,34 +55,30 @@ const Orders = () => {
 
     };
 
-
     const fetchStats = async () => {
 
-    try {
+        try {
 
-        const token = localStorage.getItem("token");
+            const response = await API.get("/orders/stats");
 
-    const response = await API.get("/orders/stats");
+            setStats(response.data);
 
-        setStats(response.data);
+        }
 
-    }
+        catch (error) {
 
-    catch (error) {
+            console.error(error);
 
-        console.error(error);
+        }
 
-    }
+    };
 
-};
+    const refreshOrders = () => {
 
-const refreshOrders = () => {
+        fetchOrders();
+        fetchStats();
 
-    fetchOrders();
-
-    fetchStats();
-
-};
+    };
 
     if (loading) {
 
@@ -111,148 +106,151 @@ const refreshOrders = () => {
 
             <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-5">
 
-    <StatCard
+                <StatCard title="Total Orders" value={stats.totalOrders} />
 
-        title="Total Orders"
+                <StatCard title="Pending" value={stats.pendingOrders} />
 
-        value={stats.totalOrders}
+                <StatCard title="Approved" value={stats.approvedOrders} />
 
-    />
+                <StatCard title="Rejected" value={stats.rejectedOrders} />
 
-    <StatCard
-
-        title="Pending"
-
-        value={stats.pendingOrders}
-
-    />
-
-    <StatCard
-
-        title="Approved"
-
-        value={stats.approvedOrders}
-
-    />
-
-    <StatCard
-
-        title="Rejected"
-
-        value={stats.rejectedOrders}
-
-    />
-
-    <StatCard
-
-        title="Revenue"
-
-        value={`₹${stats.revenue}`}
-
-    />
-
-</div>
-
-
-        {pendingOrders.length > 0 && (
-
-    <div className="mb-8 rounded-2xl border border-yellow-600/30 bg-[#111827] p-6">
-
-        <div className="mb-6 flex items-center justify-between">
-
-            <div>
-
-                <h2 className="text-xl font-semibold text-white">
-
-                    Pending Approval
-
-                </h2>
-
-                <p className="mt-1 text-sm text-slate-400">
-
-                    These orders are waiting for your approval.
-
-                </p>
+                <StatCard title="Revenue" value={`₹${stats.revenue}`} />
 
             </div>
 
-            <span className="rounded-full bg-yellow-500/20 px-4 py-2 text-sm font-medium text-yellow-400">
+            {pendingOrders.length > 0 && (
 
-                {pendingOrders.length} Pending
+                <div className="mb-8 rounded-2xl border border-yellow-600/30 bg-[#111827] p-6">
 
-            </span>
+                    <div className="mb-6 flex items-center justify-between">
 
-        </div>
+                        <div>
 
-        <div className="space-y-4">
+                            <h2 className="text-xl font-semibold text-white">
 
-            {pendingOrders.map((order) => (
+                                Pending Approval
 
-                <div
-                    key={order._id}
-                    className="flex items-center justify-between rounded-xl border border-slate-700 bg-[#0F172A] p-4"
-                >
+                            </h2>
 
-                    <div>
+                            <p className="mt-1 text-sm text-slate-400">
 
-                        <p className="font-medium text-white">
+                                These orders are waiting for your approval.
 
-                            {order.customerId?.phone}
+                            </p>
 
-                        </p>
+                        </div>
 
-                        <p className="mt-1 text-sm text-slate-400">
+                        <span className="rounded-full bg-yellow-500/20 px-4 py-2 text-sm font-medium text-yellow-400">
 
-                            ₹{order.totalAmount}
+                            {pendingOrders.length} Pending
 
-                        </p>
+                        </span>
 
                     </div>
 
-                    <ApprovalButtons
+                    <div className="space-y-4">
 
-                        order={order}
+                        {pendingOrders.map((order) => (
 
-                        onRefresh={refreshOrders}
+                            <div
+                                key={order._id}
+                                className="flex items-center justify-between rounded-xl border border-slate-700 bg-[#0F172A] p-4"
+                            >
 
-                    />
+                                <div>
+
+                                    <p className="font-semibold text-white">
+
+                                        {order.customerName || "Unknown Customer"}
+
+                                    </p>
+
+                                    <p className="text-sm text-slate-400">
+
+                                        {order.customerPhone}
+
+                                    </p>
+
+                                    <p className="mt-2 text-sm text-slate-300">
+
+                                        {order.rawMessage || "No message"}
+
+                                    </p>
+
+                                    <p className="mt-2 text-green-400 font-medium">
+
+                                        ₹{order.totalAmount}
+
+                                    </p>
+
+                                </div>
+
+                                <ApprovalButtons
+
+                                    order={order}
+
+                                    onRefresh={refreshOrders}
+
+                                />
+
+                            </div>
+
+                        ))}
+
+                    </div>
 
                 </div>
 
-            ))}
+            )}
 
-        </div>
+            <div className="overflow-hidden rounded-2xl border border-slate-800 bg-[#111827] overflow-x-auto">
 
-    </div>
-
-)}
-
-            <div className="overflow-hidden rounded-2xl border border-slate-800 bg-[#111827]">
-
-                <table className="w-full">
+                <table className="min-w-full">
 
                     <thead>
 
                         <tr className="border-b border-slate-800">
 
                             <th className="p-4 text-left text-slate-400">
+
                                 Customer
+
                             </th>
 
                             <th className="p-4 text-left text-slate-400">
+
+                                Message
+
+                            </th>
+
+                            <th className="p-4 text-left text-slate-400">
+
+                                Items
+
+                            </th>
+
+                            <th className="p-4 text-left text-slate-400">
+
                                 Amount
+
                             </th>
 
                             <th className="p-4 text-left text-slate-400">
+
                                 Status
+
                             </th>
 
                             <th className="p-4 text-left text-slate-400">
+
                                 Approval
+
                             </th>
 
                             <th className="p-4 text-left text-slate-400">
+
                                 Actions
+
                             </th>
 
                         </tr>
@@ -268,14 +266,57 @@ const refreshOrders = () => {
                                 className="border-b border-slate-800"
                             >
 
-                                <td className="p-4 text-white">
+                                <td className="p-4">
 
-                                   <Link
-    to={`/orders/${order._id}`}
-    className="text-blue-400 hover:underline"
->
-    {order.customerId?.phone}
-</Link>
+                                    <Link
+                                        to={`/orders/${order._id}`}
+                                        className="hover:underline"
+                                    >
+
+                                        <div>
+
+                                            <p className="font-semibold text-white">
+
+                                                {order.customerName || "Unknown"}
+
+                                            </p>
+
+                                            <p className="text-sm text-slate-400">
+
+                                                {order.customerPhone}
+
+                                            </p>
+
+                                        </div>
+
+                                    </Link>
+
+                                </td>
+
+                                <td className="p-4 max-w-sm">
+
+                                    <p
+                                        className="truncate text-slate-300"
+                                        title={order.rawMessage}
+                                    >
+
+                                        {order.rawMessage || "-"}
+
+                                    </p>
+
+                                </td>
+
+                                <td className="p-4 text-slate-300">
+
+                                    {order.items?.map((item) => (
+
+                                        <div key={item.name}>
+
+                                            {item.name} × {item.qty}
+
+                                        </div>
+
+                                    ))}
 
                                 </td>
 
@@ -299,13 +340,13 @@ const refreshOrders = () => {
 
                                 <td className="p-4">
 
-                                   <ApprovalButtons
+                                    <ApprovalButtons
 
-    order={order}
+                                        order={order}
 
-    onRefresh={refreshOrders}
+                                        onRefresh={refreshOrders}
 
-/>
+                                    />
 
                                 </td>
 

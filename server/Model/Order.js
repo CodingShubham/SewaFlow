@@ -1,40 +1,67 @@
 const mongoose = require("mongoose");
 
 const orderItemSchema = new mongoose.Schema(
-    {
-        productId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Product"
-        },
-
-        name: {
-            type: String,
-            required: true
-        },
-
-        qty: {
-            type: Number,
-            required: true
-        },
-
-        unit: {
-            type: String,
-            default: "pcs"
-        },
-
-        price: {
-            type: Number,
-            default: 0
-        },
-
-        total: {
-            type: Number,
-            default: 0
-        }
+{
+    productId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Product"
     },
-    {
-        _id: false
+
+    name: {
+        type: String,
+        required: true
+    },
+
+    qty: {
+        type: Number,
+        required: true
+    },
+
+    unit: {
+        type: String,
+        default: "pcs"
+    },
+
+    pricePerUnit: {
+    type: Number,
+    default: 0
+},
+
+    total: {
+        type: Number,
+        default: 0
     }
+},
+{
+    _id: false
+}
+);
+
+const orderTimelineSchema = new mongoose.Schema(
+{
+    event: {
+        type: String,
+        required: true
+    },
+
+    by: {
+        type: String,
+        default: "system"
+    },
+
+    note: {
+        type: String,
+        default: ""
+    },
+
+    at: {
+        type: Date,
+        default: Date.now
+    }
+},
+{
+    _id: false
+}
 );
 
 const orderSchema = new mongoose.Schema(
@@ -56,7 +83,6 @@ const orderSchema = new mongoose.Schema(
         ref: "Workflow"
     },
 
-    // Unique order number
     orderNumber: {
         type: String,
         unique: true
@@ -74,6 +100,27 @@ const orderSchema = new mongoose.Schema(
         default: "whatsapp"
     },
 
+    customerMessage: {
+
+    text: {
+        type: String,
+        default: ""
+    },
+
+    type: {
+        type: String,
+        enum: [
+            "text",
+            "image",
+            "audio",
+            "document",
+            "interactive"
+        ],
+        default: "text"
+    }
+
+},
+
     items: [orderItemSchema],
 
     totalAmount: {
@@ -88,6 +135,7 @@ const orderSchema = new mongoose.Schema(
             "confirmed",
             "processing",
             "completed",
+            "rejected",
             "cancelled"
         ],
         default: "pending"
@@ -103,7 +151,6 @@ const orderSchema = new mongoose.Schema(
         default: "pending"
     },
 
-    // NEW
     paymentStatus: {
         type: String,
         enum: [
@@ -114,30 +161,17 @@ const orderSchema = new mongoose.Schema(
         default: "pending"
     },
 
-    
-
-    // NEW
     inventoryReserved: {
         type: Boolean,
         default: false
     },
 
-    // NEW
     invoiceGenerated: {
         type: Boolean,
         default: false
     },
 
-    // NEW
-    timeline: [
-        {
-            status: String,
-            at: {
-                type: Date,
-                default: Date.now
-            }
-        }
-    ],
+    timeline: [orderTimelineSchema],
 
     notes: {
         type: String,
@@ -145,6 +179,8 @@ const orderSchema = new mongoose.Schema(
     }
 
 },
+
+
 {
     timestamps: true
 });

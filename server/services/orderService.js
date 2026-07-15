@@ -1,5 +1,11 @@
 const Order = require("../Model/Order");
 
+/*
+|--------------------------------------------------------------------------
+| Create Order
+|--------------------------------------------------------------------------
+*/
+
 const createOrder = async ({
     userId,
     customerId,
@@ -7,6 +13,10 @@ const createOrder = async ({
     workflow,
     items,
     source = "whatsapp",
+    customerMessage = {
+        text: "",
+        type: "text"
+    },
     notes = ""
 }) => {
 
@@ -15,18 +25,19 @@ const createOrder = async ({
         0
     );
 
-  
+    const approvalMode =
+        workflow?.config?.approvalMode || "automatic";
 
     const orderNumber =
-    "ORD-" +
-    Date.now() +
-    "-" +
-    Math.floor(Math.random() * 1000);
+        "ORD-" +
+        Date.now() +
+        "-" +
+        Math.floor(Math.random() * 1000);
 
     const order = await Order.create({
 
         orderNumber,
-        
+
         userId,
 
         customerId,
@@ -35,24 +46,45 @@ const createOrder = async ({
 
         source,
 
+        customerMessage,
+
         items,
 
         totalAmount,
 
         notes,
 
-       status: "pending",
+        status:
+            approvalMode === "automatic"
+                ? "confirmed"
+                : "pending",
 
-        approvalStatus: "pending",
+        approvalStatus:
+            approvalMode === "automatic"
+                ? "approved"
+                : "pending",
+
+        paymentStatus: "pending",
+
+        inventoryReserved: false,
+
+        invoiceGenerated: false,
 
         timeline: [
             {
-                status: "pending",
+                event:
+                    approvalMode === "automatic"
+                        ? "confirmed"
+                        : "pending",
+
                 by: "system",
-                note: "Order created"
+
+                note:
+                    approvalMode === "automatic"
+                        ? "Order created and auto confirmed"
+                        : "Order created and waiting approval"
             }
         ]
-
 
     });
 
@@ -62,6 +94,12 @@ const createOrder = async ({
 
 };
 
+/*
+|--------------------------------------------------------------------------
+| Get Order
+|--------------------------------------------------------------------------
+*/
+
 const getOrderById = async (orderId) => {
 
     return Order.findById(orderId)
@@ -69,6 +107,12 @@ const getOrderById = async (orderId) => {
         .populate("items.productId");
 
 };
+
+/*
+|--------------------------------------------------------------------------
+| Update Order Status
+|--------------------------------------------------------------------------
+*/
 
 const updateOrderStatus = async (
     orderId,
@@ -90,6 +134,12 @@ const updateOrderStatus = async (
     );
 
 };
+
+/*
+|--------------------------------------------------------------------------
+| Update Approval Status
+|--------------------------------------------------------------------------
+*/
 
 const updateApprovalStatus = async (
     orderId,

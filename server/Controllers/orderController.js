@@ -384,6 +384,201 @@ const getOrderStats = async (req, res) => {
 
 };
 
+
+const startProcessing = async (req, res) => {
+
+    try {
+
+        const order = await Order.findOne({
+
+            _id: req.params.id,
+
+            userId: req.user._id
+
+        });
+
+        if (!order) {
+
+            return res.status(404).json({
+
+                message: "Order not found"
+
+            });
+
+        }
+
+        if (order.status !== "confirmed") {
+
+            return res.status(400).json({
+
+                message: "Only confirmed orders can start processing."
+
+            });
+
+        }
+
+        await orderStateService.startProcessing(
+
+            order,
+
+            "owner"
+
+        );
+
+        res.json({
+
+            message: "Order moved to processing.",
+
+            order
+
+        });
+
+    }
+
+    catch (error) {
+
+        res.status(500).json({
+
+            message: error.message
+
+        });
+
+    }
+
+};
+
+
+
+const completeOrder = async (req, res) => {
+
+    try {
+
+        const order = await Order.findOne({
+
+            _id: req.params.id,
+
+            userId: req.user._id
+
+        });
+
+        if (!order) {
+
+            return res.status(404).json({
+
+                message: "Order not found"
+
+            });
+
+        }
+
+        if (order.status !== "processing") {
+
+            return res.status(400).json({
+
+                message: "Only processing orders can be completed."
+
+            });
+
+        }
+
+        await orderStateService.completeOrder(
+
+            order,
+
+            "owner"
+
+        );
+
+        res.json({
+
+            message: "Order completed successfully.",
+
+            order
+
+        });
+
+    }
+
+    catch (error) {
+
+        res.status(500).json({
+
+            message: error.message
+
+        });
+
+    }
+
+};
+
+const cancelOrder = async (req, res) => {
+
+    try {
+
+        const order = await Order.findOne({
+
+            _id: req.params.id,
+
+            userId: req.user._id
+
+        });
+
+        if (!order) {
+
+            return res.status(404).json({
+
+                message: "Order not found"
+
+            });
+
+        }
+
+        if (
+            order.status === "completed" ||
+            order.status === "cancelled"
+        ) {
+
+            return res.status(400).json({
+
+                message: "Order cannot be cancelled."
+
+            });
+
+        }
+
+        await orderStateService.cancelOrder(
+
+            order,
+
+            "owner",
+
+            "Cancelled by business owner"
+
+        );
+
+        res.json({
+
+            message: "Order cancelled successfully.",
+
+            order
+
+        });
+
+    }
+
+    catch (error) {
+
+        res.status(500).json({
+
+            message: error.message
+
+        });
+
+    }
+
+};
+
+
 module.exports = {
 
     getOrders,
@@ -391,9 +586,15 @@ module.exports = {
     getOrderById,
 
     getOrderStats,
-    
+
     approveOrder,
 
-    rejectOrder
+    rejectOrder,
+
+    startProcessing,
+
+    completeOrder,
+    
+    cancelOrder
 
 };

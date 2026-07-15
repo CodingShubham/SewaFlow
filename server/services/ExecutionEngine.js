@@ -71,19 +71,7 @@ if (
     continue;
 }
 
-/*
-|--------------------------------------------------------------------------
-| Customer Notification
-|--------------------------------------------------------------------------
-*/
 
-if (
-    stepName === "notifyCustomer" &&
-    policy.notificationsEnabled === false
-) {
-    console.log("Skipping Customer Notification");
-    continue;
-}
 
 
         execution.currentStep = stepName;

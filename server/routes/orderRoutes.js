@@ -8,13 +8,17 @@ const {
 
     getOrders,
 
+    getOrderById,
+
     getOrderStats,
 
-    getOrderById,
-  
     approveOrder,
 
-    rejectOrder
+    rejectOrder,
+
+    startProcessing,
+
+    completeOrder
 
 } = require("../Controllers/orderController");
 
@@ -70,6 +74,26 @@ router.put(
 
 );
 
+
+router.put(
+
+    "/:id/processing",
+
+    authMiddleware,
+
+   startProcessing
+
+);
+
+router.put(
+
+    "/:id/complete",
+
+    authMiddleware,
+
+   completeOrder
+
+);
 
 
 module.exports = router;

@@ -19,8 +19,7 @@ const createWorkFlow=async(req,res)=>{
     case "whatsapp-order":
 
         trigger = "whatsapp_message";
-
-     steps = [
+steps = [
 
     "parseOrder",
 
@@ -36,9 +35,7 @@ const createWorkFlow=async(req,res)=>{
 
     "updateInventory",
 
-    "generateInvoice",
-
-    "notifyCustomer"
+    "generateInvoice"
 
 ];
 

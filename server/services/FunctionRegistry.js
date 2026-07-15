@@ -2,7 +2,6 @@ const Groq = require("groq-sdk");
 const { parseOrderPrompt } = require("./Prompts");
 const Customer = require("../Model/Customer");
 const Invoice = require("../Model/Invoice");
-const axios = require("axios");
 const productProvider = require("./productProvider");
 const orderService = require("./orderService");
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
@@ -10,7 +9,8 @@ const { decideOrderExecution } = require("./decisionEngine");
 const { validateBusinessRules } = require("./businessValidator");
 const { validateDuplicateOrder } = require("./duplicateOrderValidator");
 const Order = require("../Model/Order");
-const { buildOrderMessage } = require("./messageBuilder");
+const { notifyCustomer } = require("./notificationService");
+
 
 const parseOrder = async (input) => {
     const text = input.rawMessage?.text || "";
@@ -183,29 +183,49 @@ const updateInventory = async (input) => {
     // Update Order
     //--------------------------------------------------
 
-    const order = await Order.findById(input.order._id);
+const order = await Order.findById(input.order._id);
 
-    order.inventoryReserved = true;
+// Replace old items with updated items
+order.items = updatedItems;
 
-    order.timeline.push({
-        status: "inventory_updated"
-    });
+// Calculate total amount
+order.totalAmount = updatedItems.reduce(
 
-    await order.save();
+    (sum, item) => sum + (item.total || 0),
+
+    0
+
+);
+
+order.inventoryReserved = true;
+
+order.timeline.push({
+
+    event: "inventory_updated",
+
+    by: "system",
+
+    note: "Inventory reserved"
+
+});
+
+await order.save();
 
     //--------------------------------------------------
 
-    return {
+return {
 
-        updated: true,
+    updated: true,
 
-        inventoryUpdated: true,
+    inventoryUpdated: true,
 
-        items: updatedItems,
+    items: updatedItems,
 
-        order
+    totalAmount: order.totalAmount,
 
-    };
+    order
+
+};
 
 };
 
@@ -278,7 +298,11 @@ const generateInvoice = async (input) => {
 
     order.timeline.push({
 
-        status: "invoice_generated"
+        event: "invoice_generated",
+
+        by: "system",
+
+        note: "Invoice generated"
 
     });
 
@@ -306,119 +330,6 @@ const generateInvoice = async (input) => {
 
 
 
-const notifyCustomer = async (input) => {
-
-    const {
-        customerPhone,
-        integration,
-        workflow,
-        order,
-        invoiceId
-    } = input;
-
-    const notificationsEnabled =
-        workflow?.config?.notificationsEnabled !== false;
-
-    if (!notificationsEnabled) {
-
-        console.log("Notifications disabled.");
-
-        return {
-            sent: false
-        };
-
-    }
-
-    const accessToken =
-        integration?.accessToken ||
-        process.env.WHATSAPP_ACCESS_TOKEN;
-
-    const phoneNumberId =
-        integration?.phoneNumberId ||
-        process.env.WHATSAPP_PHONE_NUMBER_ID;
-
-    //--------------------------------------------------
-    // Build message
-    //--------------------------------------------------
-
-    const message = buildOrderMessage({
-
-        type: "confirmed",
-
-        order,
-
-        invoiceId
-
-    });
-
-    //--------------------------------------------------
-
-    try {
-
-        await axios.post(
-
-            `https://graph.facebook.com/v18.0/${phoneNumberId}/messages`,
-
-            {
-
-                messaging_product: "whatsapp",
-
-                to: customerPhone,
-
-                type: "text",
-
-                text: {
-
-                    body: message
-
-                }
-
-            },
-
-            {
-
-                headers: {
-
-                    Authorization: `Bearer ${accessToken}`,
-
-                    "Content-Type": "application/json"
-
-                }
-
-            }
-
-        );
-
-        console.log("WhatsApp notification sent.");
-
-        return {
-
-            sent: true,
-
-            message,
-
-            order
-
-        };
-
-    }
-
-    catch (error) {
-
-        console.error(error.message);
-
-        return {
-
-            sent: false,
-
-            order
-
-        };
-
-    }
-
-};
-
 
 module.exports = {
 
@@ -437,8 +348,10 @@ module.exports = {
     updateInventory,
 
     generateInvoice,
-
+    
     notifyCustomer
+
+    
 
 };
 

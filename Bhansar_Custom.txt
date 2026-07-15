@@ -58,3 +58,124 @@ Declaration automatically populated
       │
       ▼
 Submit
+
+
+
+
+
+
+
+
+/ const notifyCustomer = async (input) => {
+
+//     const {
+//         customerPhone,
+//         integration,
+//         workflow,
+//         order,
+//         invoiceId
+//     } = input;
+
+//     const notificationsEnabled =
+//         workflow?.config?.notificationsEnabled !== false;
+
+//     if (!notificationsEnabled) {
+
+//         console.log("Notifications disabled.");
+
+//         return {
+//             sent: false
+//         };
+
+//     }
+
+//     const accessToken =
+//         integration?.accessToken ||
+//         process.env.WHATSAPP_ACCESS_TOKEN;
+
+//     const phoneNumberId =
+//         integration?.phoneNumberId ||
+//         process.env.WHATSAPP_PHONE_NUMBER_ID;
+
+//     //--------------------------------------------------
+//     // Build message
+//     //--------------------------------------------------
+
+//     const message = buildOrderMessage({
+
+//         type: "confirmed",
+
+//         order,
+
+//         invoiceId
+
+//     });
+
+//     //--------------------------------------------------
+
+//     try {
+
+//         await axios.post(
+
+//             `https://graph.facebook.com/v18.0/${phoneNumberId}/messages`,
+
+//             {
+
+//                 messaging_product: "whatsapp",
+
+//                 to: customerPhone,
+
+//                 type: "text",
+
+//                 text: {
+
+//                     body: message
+
+//                 }
+
+//             },
+
+//             {
+
+//                 headers: {
+
+//                     Authorization: `Bearer ${accessToken}`,
+
+//                     "Content-Type": "application/json"
+
+//                 }
+
+//             }
+
+//         );
+
+//         console.log("WhatsApp notification sent.");
+
+//         return {
+
+//             sent: true,
+
+//             message,
+
+//             order
+
+//         };
+
+//     }
+
+//     catch (error) {
+
+//         console.error(error.message);
+
+//         return {
+
+//             sent: false,
+
+//             order
+
+//         };
+
+//     }
+
+// };
+

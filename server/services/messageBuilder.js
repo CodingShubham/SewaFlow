@@ -1,46 +1,101 @@
-const buildOrderMessage = ({
-    type,
-    order,
-    invoiceId
-}) => {
+const formatItems = (items = []) => {
+    return items
+        .map(i => `• ${i.name} × ${i.qty}`)
+        .join("\n");
+};
 
-    switch (type) {
+/*
+|--------------------------------------------------------------------------
+| Individual Messages
+|--------------------------------------------------------------------------
+*/
 
-        case "confirmed":
+const buildOrderConfirmed = ({ order }) => {
+    return `✅ Your order has been confirmed.
 
-            return `✅ Your order ${order.orderNumber} has been confirmed.
+Order No: ${order.orderNumber}
+
+${formatItems(order.items)}
 
 Total: ₹${order.totalAmount}
 
-Invoice: ${invoiceId}
+We have started preparing your order.`;
+};
 
-Thank you for your order!`;
+const buildOrderProcessing = ({ order }) => {
+    return `📦 Your order is now being prepared.
 
-        case "processing":
+Order No: ${order.orderNumber}
 
-            return `📦 Your order ${order.orderNumber} is now being prepared.`;
+We'll notify you again once it is completed.`;
+};
 
-        case "completed":
+const buildOrderCompleted = ({ order }) => {
+    return `🎉 Your order has been completed.
 
-            return `🎉 Your order ${order.orderNumber} has been completed.
+Order No: ${order.orderNumber}
 
-Thank you for shopping with us!`;
+Thank you for shopping with us ❤️`;
+};
 
-        case "cancelled":
+const buildOrderRejected = ({ order }) => {
+    return `❌ Unfortunately we couldn't accept your order.
 
-            return `❌ Your order ${order.orderNumber} has been cancelled.`;
+Order No: ${order.orderNumber}
 
-        case "rejected":
+If you have any questions, please contact us.`;
+};
 
-            return `❌ Sorry, we are unable to process your order.`;
+const buildOrderCancelled = ({ order }) => {
+    return `⚠️ Your order has been cancelled.
+
+Order No: ${order.orderNumber}
+
+If this was unexpected, please contact us.`;
+};
+
+/*
+|--------------------------------------------------------------------------
+| Generic Builder
+|--------------------------------------------------------------------------
+*/
+
+const buildOrderMessage = ({ type, order, invoiceId }) => {
+
+    switch (type) {
+
+        case "ORDER_CONFIRMED":
+            return buildOrderConfirmed({ order, invoiceId });
+
+        case "ORDER_PROCESSING":
+            return buildOrderProcessing({ order, invoiceId });
+
+        case "ORDER_COMPLETED":
+            return buildOrderCompleted({ order, invoiceId });
+
+        case "ORDER_REJECTED":
+            return buildOrderRejected({ order, invoiceId });
+
+        case "ORDER_CANCELLED":
+            return buildOrderCancelled({ order, invoiceId });
 
         default:
-
-            return "";
+            return null;
     }
-
 };
 
 module.exports = {
-    buildOrderMessage
+
+    buildOrderMessage,
+
+    buildOrderConfirmed,
+
+    buildOrderProcessing,
+
+    buildOrderCompleted,
+
+    buildOrderRejected,
+
+    buildOrderCancelled
+
 };

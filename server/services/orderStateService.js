@@ -1,28 +1,45 @@
-const Order = require("../Model/Order");
-
 /*
 |--------------------------------------------------------------------------
-| Confirm Order
+| Order State Service
 |--------------------------------------------------------------------------
+|
+| Single source of truth for every Order state transition.
+| Nothing else in the project should modify order.status directly.
+|
 */
+const { dispatchOrderEvent } = require("./orderEventDispatcher");
 
-const confirmOrder = async (order, by = "system") => {
+const confirmOrder = async (
+    order,
+    by = "system"
+) => {
 
     order.status = "confirmed";
-
     order.approvalStatus = "approved";
 
     order.timeline.push({
-        status: "confirmed",
+        event: "confirmed",
         by,
         note: "Order confirmed"
     });
 
     await order.save();
 
-    return order;
+    await dispatchOrderEvent(
 
+    "ORDER_CONFIRMED",
+
+    {
+
+        order
+
+    }
+
+);
+
+    return order;
 };
+
 
 /*
 |--------------------------------------------------------------------------
@@ -36,21 +53,32 @@ const rejectOrder = async (
     note = "Order rejected"
 ) => {
 
-    order.status = "cancelled";
-
+    order.status = "rejected";
     order.approvalStatus = "rejected";
 
     order.timeline.push({
-        status: "cancelled",
+        event: "rejected",
         by,
         note
     });
 
     await order.save();
 
-    return order;
+    await dispatchOrderEvent(
 
+    "ORDER_REJECTED",
+
+    {
+
+        order
+
+    }
+
+);
+
+    return order;
 };
+
 
 /*
 |--------------------------------------------------------------------------
@@ -66,16 +94,28 @@ const startProcessing = async (
     order.status = "processing";
 
     order.timeline.push({
-        status: "processing",
+        event: "processing",
         by,
         note: "Order processing started"
     });
 
     await order.save();
 
-    return order;
+    await dispatchOrderEvent(
 
+    "ORDER_PROCESSING",
+
+    {
+
+        order
+
+    }
+
+);
+
+    return order;
 };
+
 
 /*
 |--------------------------------------------------------------------------
@@ -91,16 +131,28 @@ const completeOrder = async (
     order.status = "completed";
 
     order.timeline.push({
-        status: "completed",
+        event: "completed",
         by,
         note: "Order completed"
     });
 
     await order.save();
 
-    return order;
+    await dispatchOrderEvent(
 
+    "ORDER_COMPLETED",
+
+    {
+
+        order
+
+    }
+
+);
+
+    return order;
 };
+
 
 /*
 |--------------------------------------------------------------------------
@@ -117,15 +169,26 @@ const cancelOrder = async (
     order.status = "cancelled";
 
     order.timeline.push({
-        status: "cancelled",
+        event: "cancelled",
         by,
         note
     });
 
     await order.save();
 
-    return order;
+    await dispatchOrderEvent(
 
+    "ORDER_CANCELLED",
+
+    {
+
+        order
+
+    }
+
+);
+
+    return order;
 };
 
 module.exports = {
