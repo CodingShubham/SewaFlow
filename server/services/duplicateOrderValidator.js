@@ -1,51 +1,146 @@
 const Order = require("../Model/Order");
 
+/*
+|--------------------------------------------------------------------------
+| Normalize Items
+|--------------------------------------------------------------------------
+*/
+
+const normalizeItems = (items = []) => {
+
+    return items
+        .map(item => ({
+
+            name: item.name?.trim().toLowerCase(),
+
+            qty: Number(item.qty),
+
+            unit: (item.unit || "").trim().toLowerCase()
+
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name));
+
+};
+
+/*
+|--------------------------------------------------------------------------
+| Duplicate Order Validation
+|--------------------------------------------------------------------------
+*/
+
 const validateDuplicateOrder = async (input) => {
 
-   const customerId = input.customerId;
+    const {
 
-    if (!customerId) {
-        return {
-            shouldContinue: true
-        };
-    }
-
-    // Look for recent pending/confirmed orders from same customer
-    const recentOrder = await Order.findOne({
         customerId,
-        status: {
-            $in: ["pending", "confirmed"]
-        },
-        createdAt: {
-            $gte: new Date(Date.now() - 2 * 60 * 1000) // last 2 minutes
-        }
-    }).sort({ createdAt: -1 });
 
-    if (!recentOrder) {
+        userId,
+
+        items
+
+    } = input;
+
+    if (!customerId || !userId || !items?.length) {
+
         return {
+
             shouldContinue: true
+
         };
+
     }
 
-    // Compare items
-    const oldItems = JSON.stringify(recentOrder.items);
-    const newItems = JSON.stringify(input.items);
+    //------------------------------------------------------
+    // Find recent active orders
+    //------------------------------------------------------
 
-    if (oldItems === newItems) {
+    const recentOrders = await Order.find({
+
+        userId,
+
+        customerId,
+
+status: {
+    $in: [
+        "pending",
+        "confirmed",
+        "processing",
+        "completed"
+    ]
+},
+
+        createdAt: {
+
+            $gte: new Date(Date.now() - 5 * 60 * 1000)
+
+        }
+
+    });
+
+    if (!recentOrders.length) {
 
         return {
-            shouldContinue: false,
-            reason: "Duplicate order detected."
+
+            shouldContinue: true
+
         };
+
+    }
+
+    //------------------------------------------------------
+    // Normalize incoming items
+    //------------------------------------------------------
+
+    const incomingItems = normalizeItems(items);
+
+    //------------------------------------------------------
+    // Compare with existing orders
+    //------------------------------------------------------
+
+    for (const order of recentOrders) {
+
+        const existingItems = normalizeItems(order.items);
+
+        if (
+
+            JSON.stringify(existingItems) ===
+
+            JSON.stringify(incomingItems)
+
+        ) {
+
+            console.log(
+
+                `Duplicate order detected: ${order.orderNumber}`
+
+            );
+
+            return {
+
+                shouldContinue: false,
+
+                reason: `Duplicate order detected. Existing Order: ${order.orderNumber}`,
+
+                duplicateOrderId: order._id,
+
+                duplicateOrderNumber: order.orderNumber
+
+            };
+
+        }
 
     }
 
     return {
+
         shouldContinue: true
+
     };
 
 };
 
 module.exports = {
+
     validateDuplicateOrder
+
 };

@@ -1,0 +1,39 @@
+Documents nedded while uploading in the ASYUDA Software
+
+Commercial Invoice
+        +
+Packing List
+        +
+Lorry Receipt
+        +
+Transport Invoice
+        +
+Insurance Certificate
+        +
+Bill of Lading   
+        +
+Certificate of Origin
+
+
+ 
+pdftotext "File Path" output.txt
+
+
+MY PROTOTYPE Status->
+
+upload.controller.js
+        │
+        ▼
+pdf.service.js
+        │
+        ▼
+ocr.controller.js
+        │
+        ▼
+ai.service.js
+        │
+        ▼
+extraction.service.js
+        │
+        ▼
+JSON Response ✅

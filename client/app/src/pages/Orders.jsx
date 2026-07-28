@@ -4,6 +4,7 @@ import API from "../api/axios";
 import StatusBadge from "../components/orders/StatusBadge";
 import ApprovalButtons from "../components/orders/ApprovalButtons";
 import StatCard from "../components/orders/StatCard";
+import Sidebar from "../components/Sidebar";
 
 const Orders = () => {
 
@@ -79,24 +80,27 @@ const Orders = () => {
         fetchStats();
 
     };
-
-    if (loading) {
-
-        return (
-
-            <div className="p-10 text-white">
-
-                Loading Orders...
-
-            </div>
-
-        );
-
-    }
-
+if (loading) {
     return (
+        <div className="flex min-h-screen bg-[#0f1117]">
+            <Sidebar />
 
-        <div className="p-8">
+            <main className="flex-1 p-8">
+                <div className="text-white">
+                    Loading Orders...
+                </div>
+            </main>
+        </div>
+    );
+}
+
+  return (
+
+    <div className="flex min-h-screen bg-[#0f1117]">
+
+        <Sidebar />
+
+        <main className="flex-1 p-8">
 
             <h1 className="mb-8 text-3xl font-bold text-white">
 
@@ -360,7 +364,9 @@ const Orders = () => {
 
             </div>
 
-        </div>
+        </main>
+
+    </div>
 
     );
 

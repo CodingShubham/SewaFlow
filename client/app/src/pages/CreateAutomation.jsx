@@ -115,287 +115,286 @@ const CreateAutomation = () => {
 
 
 
-   return (
+    return (
 
-    <div className="flex min-h-screen bg-[#0f1117]">
+        <div className="flex min-h-screen bg-[#0f1117]">
 
-        <Sidebar />
+            <Sidebar />
 
-        <main className="flex-1 overflow-y-auto">
+            <main className="flex-1 overflow-y-auto">
 
-            <div className="max-w-7xl mx-auto p-8">
+                <div className="max-w-7xl mx-auto p-8">
 
-                {/* Existing content starts here */}
+                    {/* Existing content starts here */}
 
-                <h1 className="text-3xl font-bold text-white">
-                    Create Automation
-                </h1>
+                    <h1 className="text-3xl font-bold text-white">
+                        Create Automation
+                    </h1>
 
-                <p className="text-slate-400 mt-2">
-                    Build your first automation.
-                </p>
+                    <p className="text-slate-400 mt-2">
+                        Build your first automation.
+                    </p>
 
-                <StepIndicator currentStep={currentStep} />
+                    <StepIndicator currentStep={currentStep} />
 
-                <div className="mt-10">
+                    <div className="mt-10">
 
-                    {currentStep === STEPS.START && (
+                        {currentStep === STEPS.START && (
 
-                        <StartMethod
+                            <StartMethod
 
-                            selected={wizardData.creationMethod}
+                                selected={wizardData.creationMethod}
 
-                            onSelect={(method) =>
-                                setWizardData((prev) => ({
-                                    ...prev,
-                                    creationMethod: method,
-                                }))
-                            }
+                                onSelect={(method) =>
+                                    setWizardData((prev) => ({
+                                        ...prev,
+                                        creationMethod: method,
+                                    }))
+                                }
 
-                        />
+                            />
 
-                    )}
+                        )}
 
-                    {currentStep === STEPS.TEMPLATE && (
+                        {currentStep === STEPS.TEMPLATE && (
 
-                        <div>
+                            <div>
 
-                            <h2 className="text-2xl font-semibold text-white">
-                                Choose Template
-                            </h2>
+                                <h2 className="text-2xl font-semibold text-white">
+                                    Choose Template
+                                </h2>
 
-                            <p className="text-slate-400 mt-2">
-                                Select a template to start with.
-                            </p>
+                                <p className="text-slate-400 mt-2">
+                                    Select a template to start with.
+                                </p>
 
-                            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6 mt-8">
+                                <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6 mt-8">
+                                    {templates.map((template) => (
+                                        <TemplateCard
+                                            key={template.id}
+                                            {...template}
+                                            selected={wizardData.template?.id === template.id}
+                                            onClick={() => {
+                                                if (template.comingSoon) return;
 
-                                {templates.map((template) => (
+                                                setWizardData((prev) => ({
+                                                    ...prev,
+                                                    template,
+                                                    configuration: {
+                                                        ...template.defaultConfiguration,
+                                                    },
+                                                }));
+                                            }}
+                                        />
+                                    ))}
 
-                                    <TemplateCard
-                                        key={template.id}
-                                        {...template}
-                                        selected={wizardData.template?.id === template.id}
-                                        onClick={() =>
-                                            setWizardData((prev) => ({
-                                                ...prev,
-                                                template,
-                                                configuration: {
-                                                    ...template.defaultConfiguration
-                                                }
-                                            }))
-                                        }
-                                    />
-
-                                ))}
+                                </div>
 
                             </div>
 
-                        </div>
+                        )}
 
-                    )}
+                        {currentStep === STEPS.BUSINESS && (
+                            <BusinessSetupForm
+                                onSuccess={(businessConfig) => {
+                                    console.log("Received from BusinessSetup:", businessConfig);
+                                    setWizardData((prev) => ({
+                                        ...prev,
+                                        businessConfig,
+                                    }));
 
-                    {currentStep === STEPS.BUSINESS && (
-                        <BusinessSetupForm
-                            onSuccess={(businessConfig) => {
-                                console.log("Received from BusinessSetup:", businessConfig);
-                                setWizardData((prev) => ({
-                                    ...prev,
-                                    businessConfig,
-                                }));
+                                    setCurrentStep(STEPS.INTEGRATIONS);
+                                }}
+                            />
+                        )}
 
-                                setCurrentStep(STEPS.INTEGRATIONS);
+
+
+                        {currentStep === STEPS.DATA_SOURCE && (
+
+                            <BusinessData
+                                embedded={true}
+                                onSuccess={(dataSource) => {
+
+                                    setWizardData(prev => ({
+                                        ...prev,
+                                        dataSource
+                                    }));
+
+                                    setCurrentStep(STEPS.DATA_SOURCE);
+
+                                }}
+                            />
+
+                        )}
+
+
+
+                        {currentStep === STEPS.INTEGRATIONS && (
+                            <IntegrationStep
+                                requiredIntegrations={
+                                    wizardData.template?.requirements?.integrations || []
+                                }
+                                onSuccess={(connectedIntegrations) => {
+                                    console.log(
+                                        "Received Connected Integrations:",
+                                        connectedIntegrations
+                                    );
+
+                                    setWizardData((prev) => ({
+                                        ...prev,
+                                        integrations: connectedIntegrations,
+                                    }));
+                                }}
+                            />
+                        )}
+                        {currentStep === STEPS.CONFIGURATION && (
+
+                            <ConfigurationRenderer
+
+                                template={wizardData.template}
+
+                                value={wizardData.configuration}
+
+                                onChange={(configuration) =>
+
+                                    setWizardData(prev => ({
+                                        ...prev,
+                                        configuration
+                                    }))
+
+                                }
+
+                            />
+
+                        )}
+
+                        {currentStep === STEPS.REVIEW && (
+
+                            <ReviewStep
+
+                                template={wizardData.template}
+
+                                integrations={wizardData.integrations}
+
+                                configuration={wizardData.configuration}
+
+                            />
+
+                        )}
+
+                    </div>
+
+                    <div className="flex justify-between mt-10">
+
+                        <button
+
+                            onClick={() => {
+
+                                switch (currentStep) {
+
+                                    case STEPS.TEMPLATE:
+                                        setCurrentStep(STEPS.START);
+                                        break;
+
+                                    case STEPS.BUSINESS:
+                                        setCurrentStep(STEPS.TEMPLATE);
+                                        break;
+
+                                    case STEPS.DATA_SOURCE:
+                                        setCurrentStep(STEPS.BUSINESS);
+                                        break;
+
+                                    case STEPS.INTEGRATIONS:
+                                        setCurrentStep(STEPS.DATA_SOURCE);
+                                        break;
+
+                                    case STEPS.CONFIGURATION:
+                                        setCurrentStep(STEPS.INTEGRATIONS);
+                                        break;
+
+                                    case STEPS.REVIEW:
+                                        setCurrentStep(STEPS.CONFIGURATION);
+                                        break;
+
+                                    default:
+                                        break;
+
+                                }
+
                             }}
-                        />
-                    )}
+                            disabled={currentStep === STEPS.START}
+                            className="px-6 py-3 rounded-xl border border-slate-700 text-slate-300 hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed"
+                        >
+                            Back
+                        </button>
 
+                        <button
+                            disabled={
+                                checkingBusiness ||
 
+                                (currentStep === STEPS.START &&
+                                    !wizardData.creationMethod) ||
 
-                    {currentStep === STEPS.DATA_SOURCE && (
+                                (currentStep === STEPS.TEMPLATE &&
+                                    !wizardData.template) ||
 
-                        <BusinessData
-                            embedded={true}
-                            onSuccess={(dataSource) => {
-
-                                setWizardData(prev => ({
-                                    ...prev,
-                                    dataSource
-                                }));
-
-                                setCurrentStep(STEPS.DATA_SOURCE);
-
-                            }}
-                        />
-
-                    )}
-
-
-
-                    {currentStep === STEPS.INTEGRATIONS && (
-                        <IntegrationStep
-                            requiredIntegrations={
-                                wizardData.template?.requirements?.integrations || []
+                                (currentStep === STEPS.INTEGRATIONS &&
+                                    wizardData.integrations.length === 0)
                             }
-                            onSuccess={(connectedIntegrations) => {
-                                console.log(
-                                    "Received Connected Integrations:",
-                                    connectedIntegrations
-                                );
+                            onClick={() => {
 
-                                setWizardData((prev) => ({
-                                    ...prev,
-                                    integrations: connectedIntegrations,
-                                }));
+                                switch (currentStep) {
+
+                                    case STEPS.START:
+                                        setCurrentStep(STEPS.TEMPLATE);
+                                        break;
+
+                                    case STEPS.TEMPLATE:
+                                        checkBusinessSetup();
+                                        break;
+
+                                    case STEPS.BUSINESS:
+                                        setCurrentStep(STEPS.DATA_SOURCE);
+                                        break;
+
+                                    case STEPS.DATA_SOURCE:
+                                        setCurrentStep(STEPS.INTEGRATIONS);
+                                        break;
+
+                                    case STEPS.INTEGRATIONS:
+                                        setCurrentStep(STEPS.CONFIGURATION);
+                                        break;
+
+                                    case STEPS.CONFIGURATION:
+                                        setCurrentStep(STEPS.REVIEW);
+                                        break;
+
+                                    case STEPS.REVIEW:
+                                        handleCreateAutomation();
+                                        break;
+
+                                    default:
+                                        break;
+                                }
+
                             }}
-                        />
-                    )}
-                    {currentStep === STEPS.CONFIGURATION && (
+                            className="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
+                        >
 
-                        <ConfigurationRenderer
+                            {checkingBusiness
+                                ? "Checking Workspace..."
+                                : currentStep === STEPS.REVIEW
+                                    ? "Create Automation"
+                                    : currentStep === STEPS.START
+                                        ? "Next"
+                                        : "Continue"}
 
-                            template={wizardData.template}
+                        </button>
 
-                            value={wizardData.configuration}
-
-                            onChange={(configuration) =>
-
-                                setWizardData(prev => ({
-                                    ...prev,
-                                    configuration
-                                }))
-
-                            }
-
-                        />
-
-                    )}
-
-                    {currentStep === STEPS.REVIEW && (
-
-                        <ReviewStep
-
-                            template={wizardData.template}
-
-                            integrations={wizardData.integrations}
-
-                            configuration={wizardData.configuration}
-
-                        />
-
-                    )}
+                    </div>
 
                 </div>
-
-                <div className="flex justify-between mt-10">
-
-                    <button
-
-                        onClick={() => {
-
-                            switch (currentStep) {
-
-                                case STEPS.TEMPLATE:
-                                    setCurrentStep(STEPS.START);
-                                    break;
-
-                                case STEPS.BUSINESS:
-                                    setCurrentStep(STEPS.TEMPLATE);
-                                    break;
-
-                                case STEPS.DATA_SOURCE:
-                                    setCurrentStep(STEPS.BUSINESS);
-                                    break;
-
-                                case STEPS.INTEGRATIONS:
-                                    setCurrentStep(STEPS.DATA_SOURCE);
-                                    break;
-
-                                case STEPS.CONFIGURATION:
-                                    setCurrentStep(STEPS.INTEGRATIONS);
-                                    break;
-
-                                case STEPS.REVIEW:
-                                    setCurrentStep(STEPS.CONFIGURATION);
-                                    break;
-
-                                default:
-                                    break;
-
-                            }
-
-                        }}
-                        disabled={currentStep === STEPS.START}
-                        className="px-6 py-3 rounded-xl border border-slate-700 text-slate-300 hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed"
-                    >
-                        Back
-                    </button>
-
-                    <button
-                        disabled={
-                            checkingBusiness ||
-
-                            (currentStep === STEPS.START &&
-                                !wizardData.creationMethod) ||
-
-                            (currentStep === STEPS.TEMPLATE &&
-                                !wizardData.template) ||
-
-                            (currentStep === STEPS.INTEGRATIONS &&
-                                wizardData.integrations.length === 0)
-                        }
-                        onClick={() => {
-
-                            switch (currentStep) {
-
-                                case STEPS.START:
-                                    setCurrentStep(STEPS.TEMPLATE);
-                                    break;
-
-                                case STEPS.TEMPLATE:
-                                    checkBusinessSetup();
-                                    break;
-
-                                case STEPS.BUSINESS:
-                                    setCurrentStep(STEPS.DATA_SOURCE);
-                                    break;
-
-                                case STEPS.DATA_SOURCE:
-                                    setCurrentStep(STEPS.INTEGRATIONS);
-                                    break;
-
-                                case STEPS.INTEGRATIONS:
-                                    setCurrentStep(STEPS.CONFIGURATION);
-                                    break;
-
-                                case STEPS.CONFIGURATION:
-                                    setCurrentStep(STEPS.REVIEW);
-                                    break;
-
-                                case STEPS.REVIEW:
-                                    handleCreateAutomation();
-                                    break;
-
-                                default:
-                                    break;
-                            }
-
-                        }}
-                        className="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
-                    >
-
-                        {checkingBusiness
-                            ? "Checking Workspace..."
-                            : currentStep === STEPS.REVIEW
-                                ? "Create Automation"
-                                : currentStep === STEPS.START
-                                    ? "Next"
-                                    : "Continue"}
-
-                    </button>
-
-                </div>
-
-            </div>
             </main>
         </div>
     );
