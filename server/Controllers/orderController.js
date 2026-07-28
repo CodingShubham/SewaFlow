@@ -249,34 +249,42 @@ const rejectOrder = async (req, res) => {
         };
 
 
-            await orderStateService.confirmOrder(
-            order,
-            "owner"
-        );
-
         const result = await executeWorkflow(
 
-            workflow,
+    workflow,
 
-            eventData,
+    eventData,
 
-            "updateInventory"
+    "updateInventory"
 
-        );
+);
 
-        console.log(result);
+console.log(result);
 
-        if (!result.success) {
+if (!result.success) {
 
-            return res.status(400).json({
+    return res.status(400).json({
 
-                message: "Order approval failed because workflow execution was unsuccessful.",
+        message: "Order approval failed because workflow execution was unsuccessful.",
 
-                executionId: result.executionId
+        executionId: result.executionId
 
-            });
+    });
 
-        }
+}
+
+// Reload latest order after inventory update
+const updatedOrder = await Order.findById(order._id);
+
+// Now confirm the order
+await orderStateService.confirmOrder(
+
+    updatedOrder,
+
+    "owner"
+
+);
+
 
 
 

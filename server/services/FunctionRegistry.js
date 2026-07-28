@@ -85,24 +85,33 @@ const createOrder = async (input) => {
         customerId,
         userId,
         workflow,
-        items
+        items,
+        rawMessage
     } = input;
 
     const order = await orderService.createOrder({
 
-    userId,
+        userId,
 
-    customerId,
+        customerId,
 
-    workflowId: workflow?._id,
+        workflowId: workflow?._id,
 
-    workflow,
+        workflow,
 
-    source: "whatsapp",
+        source: "whatsapp",
 
-    items
+        customerMessage: {
 
-});
+            text: rawMessage?.text || "",
+
+            type: "text"
+
+        },
+
+        items
+
+    });
 
     return {
 

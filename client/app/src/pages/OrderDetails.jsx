@@ -89,7 +89,7 @@ const OrderDetails = () => {
 
                 <div className="rounded bg-slate-900 p-4 text-slate-300">
 
-                    {order.rawMessage || "No message stored"}
+                    {order.customerMessage?.text || "No message stored"}
 
                 </div>
 
